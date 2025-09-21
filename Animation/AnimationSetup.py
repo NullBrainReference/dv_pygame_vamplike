@@ -9,12 +9,22 @@ def setup_animations():
         unit_name="Player",
         dir_path="Assets/Units/Player",
         frame_size=(16, 16),
-        frame_rate=8
+        frame_rate=4
     )
 
-    # ANIMATION_LIBRARY.load_unit_animations(
-    #     unit_name="Enemy",
-    #     dir_path="Assets/Units/Enemy",
-    #     frame_size=(16, 16),
-    #     frame_rate=6
-    # )
+    ANIMATION_LIBRARY.load_unit_animations(
+        unit_name="Spider",
+        dir_path="Assets/Units/Spider",
+        frame_size=(16, 16),
+        frame_rate=4
+    )
+
+    
+    ANIMATION_LIBRARY.load_unit_animations(
+        unit_name="Zombie",
+        dir_path="Assets/Units/Zombie",
+        frame_size=(16, 16),
+        frame_rate=4
+    )
+
+
