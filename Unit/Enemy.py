@@ -11,11 +11,14 @@ class Enemy(Unit):
                  pos: pygame.Vector2,
                  weapon: Weapon,
                  enemy_type: str,
-                 speed: float = 4):
+                 speed: float = 4,
+                 scale: int = 1):
         super().__init__(hp=30, weapon=weapon)
         self.pos = pos
         self.speed = speed
         self.enemy_type = enemy_type
+
+        self.scale = scale
 
         # Загрузка анимаций для этого типа (idle, side, up, down)
         self.animations = {
@@ -63,7 +66,10 @@ class Enemy(Unit):
 
 # Unit/Enemy.py
     def draw(self, screen: pygame.Surface, camera: Camera):
-        frame = self.current_anim.frames[self.anim_frame_idx]
+        # frame = self.current_anim.frames[self.anim_frame_idx]
+        orig = self.current_anim.frames[self.anim_frame_idx]
+        sc = self.scale
+        frame = pygame.transform.scale(orig, (orig.get_width()*sc, orig.get_height()*sc))
         if self.flip_horiz:
             frame = pygame.transform.flip(frame, True, False)
 

@@ -5,12 +5,14 @@ from .Unit import Unit
 from Weapon.Weapon import Weapon
 from UI.HPBar import draw_hp_bar
 from GameManagement.Camera import Camera
+from Effects.RegenerationEffect import RegenerationEffect
 
 class Player(Unit):
     def __init__(self, weapon: Weapon):
         super().__init__(hp=100, weapon=weapon)
         self.pos   = pygame.Vector2(400, 300)
-        self.speed = 20                             # pixels per second
+        self.speed = 42
+        self.scale = 2
 
         # Словарь анимаций, включая death
         self.animations = {
@@ -27,8 +29,8 @@ class Player(Unit):
         self.anim_frame_idx = 0
         self.flip_horiz     = False
 
-        # Флаг смерти
         self.is_dead = False
+        self.add_effect(RegenerationEffect(regen_rate=1, duration=None))
 
     def update(self, dt: float):
         # Смерть: только death-анимация
@@ -36,7 +38,7 @@ class Player(Unit):
             self._update_death_animation(dt)
             return
 
-        # 1) Обновляем оружие
+        self.update_effects(dt)
         self.weapon.update(dt)
 
         # 2) Обрабатываем ввод WASD
@@ -70,7 +72,10 @@ class Player(Unit):
         self._advance_frame(dt)
 
     def draw(self, screen: pygame.Surface, camera: Camera):
-        frame = self.current_anim.frames[self.anim_frame_idx]
+        orig = self.current_anim.frames[self.anim_frame_idx]
+        sc = self.scale
+        frame = pygame.transform.scale(orig, (orig.get_width()*sc, orig.get_height()*sc))
+        # frame = self.current_anim.frames[self.anim_frame_idx]
         if self.flip_horiz:
             frame = pygame.transform.flip(frame, True, False)
 

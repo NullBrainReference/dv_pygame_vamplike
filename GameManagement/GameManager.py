@@ -36,40 +36,37 @@ class GameManager:
         if self.spawn_timer >= self.spawn_rate:
             self.spawn_timer -= self.spawn_rate
             pos = self._random_spawn_pos(400, self.field.player.pos)
+            speed = 25
+            scale = 1.6
 
-            # Рандомно создаём Spider или Zombie
             if random.random() < 0.5:
-                # Spider с луком
                 weapon     = Bow(range=300, rate=1.2, damage=6)
                 enemy_type = "Spider"
             else:
-                # Zombie с мечом
                 weapon     = Sword(range=20, rate=1.5, damage=12)
                 enemy_type = "Zombie"
+                speed      = 48
+                scale      = 2.4
 
-            self.field.enemies.append(Enemy(pos, weapon, enemy_type, 12))
+            self.field.enemies.append(Enemy(pos, weapon, enemy_type, speed, scale))
 
-        # Обновление игрока
         self.field.player.update(dt)
 
         self.camera.update(self.field.player.pos)
 
-        # Обновление и атака каждого врага
         for en in self.field.enemies:
             en.update(dt, self.field.player.pos)
             if en.weapon:
                 en.weapon.on_attack(en.pos, [self.field.player])
 
-        # Атака игрока
         self.field.player.weapon.on_attack(self.field.player.pos, self.field.enemies)
 
-        # Обновление снарядов и эффектов
         for p in self.field.projectiles:
             p.update(dt)
         for e in self.field.effects:
             e.update(dt)
 
-        # Проверка попаданий
+        # Hit detection
         for p in self.field.projectiles:
             if p.target == None:
                 p.alive = False
@@ -83,7 +80,6 @@ class GameManager:
                         en.take_damage(p.damage)
                         p.alive = False
 
-        # In-place очистка списков
         for lst, attr in [
             (self.field.projectiles, 'alive'),
             (self.field.effects,     'alive'),
@@ -91,7 +87,7 @@ class GameManager:
         ]:
             for i in range(len(lst)-1, -1, -1):
                 item = lst[i]
-                # если у объекта нет атрибута — считаем его живым
+
                 if not getattr(item, attr, True):
                     del lst[i]
 
