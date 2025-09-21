@@ -5,6 +5,8 @@ from Weapon.Weapon import Weapon
 from UI.HPBar import draw_hp_bar
 from Animation.AnimationLibrary import ANIMATION_LIBRARY
 from GameManagement.Camera import Camera
+from Events.Events      import GainExp
+from Events.EventBus    import bus
 
 class Enemy(Unit):
     def __init__(self,
@@ -83,4 +85,6 @@ class Enemy(Unit):
         draw_hp_bar(screen, self, pos=bar_pos)
 
     def on_death(self):
-        print(f"{self.enemy_type} уничтожен!")
+        bus.emit(GainExp(amount=30))
+        print(f"{self.enemy_type} Killed! Exp: +{30}")
+

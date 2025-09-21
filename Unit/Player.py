@@ -8,6 +8,8 @@ from GameManagement.Camera import Camera
 from Effects.RegenerationEffect import RegenerationEffect
 from Weapon.Weapon import Bow
 from Weapon.Weapon import Halberd
+from Events.Events import GainExp, LevelUp, BonusSelected
+from Events.EventBus import bus
 
 
 class Player(Unit):
@@ -16,6 +18,11 @@ class Player(Unit):
         self.pos   = pygame.Vector2(400, 300)
         self.speed = 42
         self.scale = 2
+
+        # exp / level
+        self.exp       = 0
+        self.level     = 1
+        self.max_exp   = 100
 
         # Словарь анимаций, включая death
         self.animations = {
@@ -45,6 +52,10 @@ class Player(Unit):
         self.flip_horiz     = False
 
         self.is_dead = False
+
+        bus.subscribe(GainExp,       self._on_gain_exp)
+        bus.subscribe(BonusSelected, self._on_bonus_selected)
+
         self.add_effect(RegenerationEffect(regen_rate=3, duration=None))
 
     def update(self, dt: float):
@@ -141,3 +152,16 @@ class Player(Unit):
         if name in self.weapons:
             self.selected_weapon = name
             self.weapon = self.weapons[name]
+
+    def _on_gain_exp(self, e: GainExp):
+        self.exp += e.amount
+        if self.exp >= self.max_exp:
+            self.exp -= self.max_exp
+            self.level += 1
+            self.max_exp = int(self.max_exp * 1.5)
+            # Уведомляем об уровне и зовём селектор
+            bus.emit(LevelUp(new_level=self.level))
+
+    def _on_bonus_selected(self, e: BonusSelected):
+        # Находим выбранный эффект и добавляем его
+        self.add_effect(e.effect)
