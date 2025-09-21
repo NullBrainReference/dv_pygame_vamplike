@@ -13,7 +13,7 @@ class Player(Unit):
 
     def draw(self, screen):
         pygame.draw.circle(screen, (0, 255, 0), self.pos, 20)
-        draw_hp_bar(screen, self)
+        draw_hp_bar(screen, self, -10)
 
     def on_death(self):
         print("Игрок погиб!")

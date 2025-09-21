@@ -83,4 +83,6 @@ class GameManager:
                     running = False
             self.update(dt)
             self.draw()
+            if self.field.player.hp <= 0:
+                running = False
         pygame.quit()
