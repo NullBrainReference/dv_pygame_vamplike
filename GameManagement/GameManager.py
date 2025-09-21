@@ -37,14 +37,14 @@ class GameManager:
             # Рандомно создаём Spider или Zombie
             if random.random() < 0.5:
                 # Spider с луком
-                weapon     = Bow(range=250, rate=1.2, damage=6)
+                weapon     = Bow(range=300, rate=1.2, damage=6)
                 enemy_type = "Spider"
             else:
                 # Zombie с мечом
-                weapon     = Sword(range=20, rate=1.5, damage=8)
+                weapon     = Sword(range=20, rate=1.5, damage=12)
                 enemy_type = "Zombie"
 
-            self.field.enemies.append(Enemy(pos, weapon, enemy_type))
+            self.field.enemies.append(Enemy(pos, weapon, enemy_type, 12))
 
         # Обновление игрока
         self.field.player.update(dt)
@@ -66,10 +66,17 @@ class GameManager:
 
         # Проверка попаданий
         for p in self.field.projectiles:
-            for en in self.field.enemies:
-                if (p.pos - en.pos).length() < 20:
-                    en.take_damage(p.damage)
-                    p.alive = False
+            if p.target == None:
+                p.alive = False
+
+            elif self.field.player == p.target and (p.pos - self.field.player.pos).length() < 20:
+                self.field.player.take_damage(p.damage)
+                p.alive = False
+            elif self.field.player != p.target:
+                for en in self.field.enemies:
+                    if (p.pos - en.pos).length() < 20:
+                        en.take_damage(p.damage)
+                        p.alive = False
 
         # In-place очистка списков
         for lst, attr in [

@@ -25,13 +25,14 @@ class Weapon:
 
 
 class Projectile:
-    def __init__(self, pos, direction, damage):
+    def __init__(self, pos, direction, damage, target):
         self.pos = pos
         self.direction = direction
         self.speed = 300
         self.damage = damage
         self.radius = 5
         self.alive = True
+        self.target = target
 
     def update(self, dt):
         self.pos += self.direction * self.speed * dt
@@ -43,13 +44,24 @@ class Projectile:
 
 class Bow(Weapon):
     def on_attack(self, origin, targets):
-        if not self.can_attack() or not targets:
+        if not self.can_attack():
             return
         self.reset_timer()
-        target = min(targets, key=lambda t: (t.pos - origin).length())
+
+        # Отбираем только цели в пределах дальности
+        in_range = [
+            t for t in targets
+            if (t.pos - origin).length_squared() <= self.range * self.range
+        ]
+        if not in_range:
+            return
+
+        # Выбираем самую близкую из тех, что в пределах range
+        target = min(in_range, key=lambda t: (t.pos - origin).length_squared())
         direction = (target.pos - origin).normalize()
-        p = Projectile(origin.copy(), direction, self.damage)
-        bus.emit(SpawnProjectile(p))
+
+        projectile = Projectile(origin.copy(), direction, self.damage, target)
+        bus.emit(SpawnProjectile(projectile))
 
 
 
