@@ -25,23 +25,35 @@ class Weapon:
         raise NotImplementedError
 
 
-
 class Projectile:
     def __init__(self, pos, direction, damage, target):
-        self.pos = pos
-        self.direction = direction
-        self.speed = 300
-        self.damage = damage
-        self.radius = 5
-        self.alive = True
-        self.target = target
+        self.pos       = pos
+        self.direction = direction.normalize()
+        self.speed     = 300
+        self.damage    = damage
+        self.alive     = True
+        self.target    = target
 
-    def update(self, dt):
+        self.original = pygame.image.load(
+            "Assets/Weapons/projectile.png"
+        ).convert_alpha()
+
+        #    math.atan2 wants (y, x) where +Y is up, so we negate direction.y
+        base_angle = math.degrees(
+            math.atan2(-self.direction.y, self.direction.x)
+        )
+        self.angle = (base_angle + 180) % 360
+
+        self.image = pygame.transform.rotate(self.original, self.angle)
+        self.rect  = self.image.get_rect()
+
+    def update(self, dt: float):
         self.pos += self.direction * self.speed * dt
 
     def draw(self, screen: pygame.Surface, camera: Camera):
-        screen_pos = camera.apply(self.pos)
-        pygame.draw.circle(screen, (255, 255, 0), screen_pos, self.radius)
+        screen_pos       = camera.apply(self.pos)
+        self.rect.center = screen_pos
+        screen.blit(self.image, self.rect)
 
 
 class Bow(Weapon):
@@ -50,7 +62,7 @@ class Bow(Weapon):
             return
         self.reset_timer()
 
-        # Отбираем только цели в пределах дальности
+        # targets in range
         in_range = [
             t for t in targets
             if (t.pos - origin).length_squared() <= self.range * self.range
@@ -59,7 +71,7 @@ class Bow(Weapon):
             return
 
         # Выбираем самую близкую из тех, что в пределах range
-        target = min(in_range, key=lambda t: (t.pos - origin).length_squared())
+        target    = min(in_range, key=lambda t: (t.pos - origin).length_squared())
         direction = (target.pos - origin).normalize()
 
         projectile = Projectile(origin.copy(), direction, self.damage, target)

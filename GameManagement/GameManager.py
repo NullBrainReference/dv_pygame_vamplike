@@ -20,7 +20,6 @@ class GameManager:
 
         self.camera = Camera(screen.get_size())
 
-        # Подписываемся на события от оружия
         bus.subscribe(SpawnProjectile, lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,     lambda e: self.field.effects.append(e.effect))
 
@@ -31,7 +30,7 @@ class GameManager:
         return pygame.Vector2(x, y)
 
     def update(self, dt: float):
-        # Спавн врагов
+        # spawn
         self.spawn_timer += dt
         if self.spawn_timer >= self.spawn_rate:
             self.spawn_timer -= self.spawn_rate
