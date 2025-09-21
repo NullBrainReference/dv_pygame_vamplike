@@ -57,9 +57,12 @@ class GameManager:
         for en in self.field.enemies:
             en.update(dt, self.field.player.pos)
             if en.weapon:
-                en.weapon.on_attack(en.pos, [self.field.player])
+                en.weapon.on_attack(en.pos, [self.field.player], owner=en)
 
-        self.field.player.weapon.on_attack(self.field.player.pos, self.field.enemies)
+        self.field.player.weapon.on_attack(
+            self.field.player.pos, 
+            self.field.enemies, 
+            owner=self.field.player)
 
         for p in self.field.projectiles:
             p.update(dt)
@@ -80,6 +83,9 @@ class GameManager:
                         en.take_damage(p.damage)
                         p.alive = False
 
+        px, py = self.field.player.pos
+        max_dist_sq = 800 * 800
+
         for lst, attr in [
             (self.field.projectiles, 'alive'),
             (self.field.effects,     'alive'),
@@ -87,8 +93,17 @@ class GameManager:
         ]:
             for i in range(len(lst)-1, -1, -1):
                 item = lst[i]
-
-                if not getattr(item, attr, True):
+                                
+                dead = not getattr(item, attr, True)
+                if dead:
+                    del lst[i]
+                    continue
+                
+                if not hasattr(item, 'pos'):
+                    continue
+                
+                too_far = (item.pos.x - px) ** 2 + (item.pos.y - py) ** 2 > max_dist_sq
+                if too_far:
                     del lst[i]
 
     def draw(self):

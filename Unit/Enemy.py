@@ -38,7 +38,9 @@ class Enemy(Unit):
 
         # Движемся к игроку
         direction = player_pos - self.pos
-        if direction.length_squared() > 0:
+        
+        # if direction.length_squared() > 0 and direction.length() >= 10:
+        if direction.length() >= 10:
             dir_norm = direction.normalize()
             self.pos += dir_norm * self.speed * dt
 

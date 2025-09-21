@@ -3,6 +3,7 @@ import pygame
 from Events.Events import SpawnProjectile, SpawnEffect
 from Events.EventBus import bus
 from GameManagement.Camera import Camera
+import math
 
 class Weapon:
     def __init__(self, range: float, rate: float, damage: float):
@@ -20,7 +21,7 @@ class Weapon:
     def reset_timer(self):
         self.timer = 0.0
 
-    def on_attack(self, origin, targets):
+    def on_attack(self, origin, targets, owner=None):
         raise NotImplementedError
 
 
@@ -44,7 +45,7 @@ class Projectile:
 
 
 class Bow(Weapon):
-    def on_attack(self, origin, targets):
+    def on_attack(self, origin, targets, owner=None):
         if not self.can_attack():
             return
         self.reset_timer()
@@ -67,14 +68,20 @@ class Bow(Weapon):
 
 
 class Sword(Weapon):
-    def on_attack(self, origin, targets):
+    def on_attack(self, origin, targets, owner=None):
         if not self.can_attack():
             return
-        self.reset_timer()
+        # self.reset_timer()
+
+        in_range = False
         for target in targets:
             if (target.pos - origin).length() <= self.range:
                 target.take_damage(self.damage)
-        from Weapon.Weapon import SwordSwingEffect
+                self.reset_timer()
+                in_range = True
+        if not in_range:
+            return
+        
         e = SwordSwingEffect(origin.copy(), self.range)
         bus.emit(SpawnEffect(e))
 
@@ -98,3 +105,100 @@ class SwordSwingEffect:
         alpha = int(255 * (self.timer / 0.3))
         color = (255, 255, 255, alpha)
         pygame.draw.circle(screen, color, screen_pos, int(self.radius), 2)
+
+class Halberd(Weapon):
+    def __init__(self,
+                 range: float,
+                 rate: float,
+                 damage: float,
+                 sprite_path: str,
+                 spin_speed: float = 720,
+                 duration: float = 0.5):
+        super().__init__(range, rate, damage)
+        # self.sprite      = pygame.image.load(sprite_path).convert_alpha()
+        raw = pygame.image.load(sprite_path).convert_alpha()
+        w, h = raw.get_size()
+        self.sprite = pygame.transform.scale(
+            raw,
+            (int(w * 2), int(h * 2))
+        )
+        self.spin_speed  = spin_speed
+        self.duration    = duration
+
+    def on_attack(self, origin, targets, owner):
+        if not self.can_attack():
+            return
+        # self.reset_timer()
+
+        # 1) мгновенный урон всем в радиусе
+        in_range = False
+
+        for t in targets:
+            if (t.pos - origin).length() <= self.range:
+                t.take_damage(self.damage)
+                self.reset_timer()
+                in_range = True
+        
+        if not in_range:
+            return
+
+        effect = HalberdSpinEffect(owner,
+                                   self.sprite,
+                                   self.spin_speed,
+                                   self.duration)
+        bus.emit(SpawnEffect(effect))
+
+
+class HalberdSpinEffect:
+    def __init__(self, owner, sprite: pygame.Surface,
+                 spin_speed: float, duration: float):
+        self.owner      = owner
+        self.sprite     = sprite
+        self.spin_speed = spin_speed
+        self.duration   = duration
+        self.timer      = 0.0
+        self.angle      = 0.0
+        self.alive      = True
+
+        # вычисляем pivot-внутри-спрайта: центр по X, 3/4 вниз по Y
+        w, h = sprite.get_size()
+        self.pivot = (w//2, int(0.75*h))
+
+        # заранее определяем размер контейнера —
+        # достаточно квадрат, который вмещает любой поворот:
+        side = max(w, h) * 2
+        self.container_size = (side, side)
+
+    def update(self, dt: float):
+        self.timer += dt
+        if self.timer >= self.duration:
+            self.alive = False
+            return
+        self.angle = (self.angle + self.spin_speed * dt) % 360
+
+    def draw(self, screen: pygame.Surface, camera):
+        if not self.alive:
+            return
+
+        # 1) куда на экране ставим нашу pivot-точку (центр игрока)
+        screen_pos = camera.apply(self.owner.pos)
+
+        # 2) создаём чистый контейнер с альфой
+        container = pygame.Surface(self.container_size, pygame.SRCALPHA)
+
+        # 3) вычисляем где внутри контейнера рисовать спрайт,
+        #    чтобы его pivot лег в центр контейнера
+        cx, cy = self.container_size[0]//2, self.container_size[1]//2
+        px, py = self.pivot
+        blit_x = cx - px
+        blit_y = cy - py
+
+        # 4) заливаем контейнер спрайтом
+        container.blit(self.sprite, (blit_x, blit_y))
+
+        # 5) поворачиваем контейнер вокруг его же центра
+        rotated = pygame.transform.rotate(container, self.angle)
+
+        # 6) рисуем так, чтобы центр контейнера совпал с screen_pos
+        rect = rotated.get_rect(center=screen_pos)
+        screen.blit(rotated, rect)

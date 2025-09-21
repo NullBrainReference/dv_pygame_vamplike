@@ -6,6 +6,9 @@ from Weapon.Weapon import Weapon
 from UI.HPBar import draw_hp_bar
 from GameManagement.Camera import Camera
 from Effects.RegenerationEffect import RegenerationEffect
+from Weapon.Weapon import Bow
+from Weapon.Weapon import Halberd
+
 
 class Player(Unit):
     def __init__(self, weapon: Weapon):
@@ -23,17 +26,28 @@ class Player(Unit):
             "death": ANIMATION_LIBRARY.get("Player.death"),
         }
 
-        # Состояние анимации
+        self.weapons = {
+            "bow":   Bow(range=320, rate=1.5, damage=8),
+            "halberd": Halberd(range=75,
+                              rate=1.2,
+                              damage=18,
+                              sprite_path="Assets/Weapons/halberd.png",
+                              spin_speed=-360,
+                              duration=1)
+        }
+        self.selected_weapon = "bow"
+        self.weapon = self.weapons[self.selected_weapon]
+
+        # Anim state
         self.current_anim   = self.animations["idle"]
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
         self.flip_horiz     = False
 
         self.is_dead = False
-        self.add_effect(RegenerationEffect(regen_rate=1, duration=None))
+        self.add_effect(RegenerationEffect(regen_rate=3, duration=None))
 
     def update(self, dt: float):
-        # Смерть: только death-анимация
         if self.is_dead:
             self._update_death_animation(dt)
             return
@@ -41,7 +55,6 @@ class Player(Unit):
         self.update_effects(dt)
         self.weapon.update(dt)
 
-        # 2) Обрабатываем ввод WASD
         keys = pygame.key.get_pressed()
         move = pygame.Vector2(
             (keys[pygame.K_d] - keys[pygame.K_a]),
@@ -49,11 +62,11 @@ class Player(Unit):
         )
 
         if move.length_squared() > 0:
-            # движение
+            # Movement
             dir_norm = move.normalize()
             self.pos += dir_norm * self.speed * dt
 
-            # выбираем анимацию по направлению
+            # anim selection
             if abs(dir_norm.x) > abs(dir_norm.y):
                 self.current_anim = self.animations["side"]
                 self.flip_horiz   = dir_norm.x < 0
@@ -64,11 +77,14 @@ class Player(Unit):
                 self.current_anim = self.animations["down"]
                 self.flip_horiz   = False
         else:
-            # стоим на месте
             self.current_anim = self.animations["idle"]
             self.flip_horiz   = False
 
-        # 3) Продвигаем кадр
+        if keys[pygame.K_1] and self.selected_weapon != "bow":
+            self.switch_weapon("bow")
+        elif keys[pygame.K_2] and self.selected_weapon != "halberd":
+            self.switch_weapon("halberd")
+
         self._advance_frame(dt)
 
     def draw(self, screen: pygame.Surface, camera: Camera):
@@ -84,7 +100,7 @@ class Player(Unit):
         screen.blit(frame, rect)
 
         if not self.is_dead:
-            # HP-бар тоже смещаем через camera
+
             bar_pos = camera.apply(self.pos) + pygame.Vector2(0, -20)
             draw_hp_bar(screen, self, pos=bar_pos)
 
@@ -98,7 +114,7 @@ class Player(Unit):
         self.anim_frame_idx = 0
 
     def _advance_frame(self, dt: float):
-        """Зацикленная анимация (idle, walk...)."""
+
         self.anim_timer += dt
         frame_duration = 1.0 / self.current_anim.frame_rate
 
@@ -107,8 +123,7 @@ class Player(Unit):
             self.anim_frame_idx = (self.anim_frame_idx + 1) % len(self.current_anim.frames)
 
     def _update_death_animation(self, dt: float):
-        """Проигрываем death-анимацию один раз."""
-        # если уже на последнем кадре — выходим
+
         if self.anim_frame_idx >= len(self.current_anim.frames) - 1:
             return
 
@@ -121,3 +136,8 @@ class Player(Unit):
             # не выходим за границы
             if self.anim_frame_idx >= len(self.current_anim.frames):
                 self.anim_frame_idx = len(self.current_anim.frames) - 1
+
+    def switch_weapon(self, name: str):
+        if name in self.weapons:
+            self.selected_weapon = name
+            self.weapon = self.weapons[name]
