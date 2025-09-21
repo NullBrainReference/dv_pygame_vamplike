@@ -21,7 +21,7 @@ class Unit(ABC):
         pass
 
     @abstractmethod
-    def draw(self, screen):
+    def draw(self, screen, camera):
         pass
 
     @abstractmethod

@@ -1,13 +1,22 @@
 import pygame
 
-def draw_hp_bar(screen, unit, offset_y=10, width=40, height=6):
-    x = unit.pos.x + 10 - width // 2  # центр над юнитом
-    y = unit.pos.y - offset_y
+# UI/HPBar.py
+def draw_hp_bar(screen, unit, pos: pygame.Vector2):
 
-    hp_ratio = unit.hp / unit.max_hp
-    hp_color = (0, 255, 0) if hp_ratio > 0.5 else (255, 255, 0) if hp_ratio > 0.2 else (255, 0, 0)
-
-    pygame.draw.rect(screen, (50, 50, 50), (x, y, width, height))  # фон
-    pygame.draw.rect(screen, hp_color, (x, y, int(width * hp_ratio), height))  # HP
-    pygame.draw.rect(screen, (0, 0, 0), (x, y, width, height), 1)  # рамка
-
+    bar_width  = 40
+    bar_height = 6
+    pct        = unit.hp / unit.max_hp
+    health_rect = pygame.Rect(
+        pos.x - bar_width // 2,
+        pos.y,
+        int(bar_width * pct),
+        bar_height
+    )
+    bg_rect = pygame.Rect(
+        pos.x - bar_width // 2,
+        pos.y,
+        bar_width,
+        bar_height
+    )
+    pygame.draw.rect(screen, (60, 60, 60), bg_rect)
+    pygame.draw.rect(screen, (0, 255, 0), health_rect)

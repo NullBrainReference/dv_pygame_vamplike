@@ -2,6 +2,7 @@
 import pygame
 from Events.Events import SpawnProjectile, SpawnEffect
 from Events.EventBus import bus
+from GameManagement.Camera import Camera
 
 class Weapon:
     def __init__(self, range: float, rate: float, damage: float):
@@ -37,9 +38,9 @@ class Projectile:
     def update(self, dt):
         self.pos += self.direction * self.speed * dt
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, (255, 255, 0), self.pos, self.radius)
-
+    def draw(self, screen: pygame.Surface, camera: Camera):
+        screen_pos = camera.apply(self.pos)
+        pygame.draw.circle(screen, (255, 255, 0), screen_pos, self.radius)
 
 
 class Bow(Weapon):
@@ -90,8 +91,10 @@ class SwordSwingEffect:
         if self.timer <= 0:
             self.alive = False
 
-    def draw(self, screen):
-        if self.alive:
-            alpha = int(255 * (self.timer / 0.3))
-            color = (255, 255, 255)
-            pygame.draw.circle(screen, color, self.pos, int(self.radius), 2)
+    def draw(self, screen: pygame.Surface, camera: Camera):
+        if not self.alive:
+            return
+        screen_pos = camera.apply(self.pos)
+        alpha = int(255 * (self.timer / 0.3))
+        color = (255, 255, 255, alpha)
+        pygame.draw.circle(screen, color, screen_pos, int(self.radius), 2)

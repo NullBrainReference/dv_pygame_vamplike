@@ -8,6 +8,7 @@ from Events.Events      import SpawnProjectile, SpawnEffect
 from Unit.Enemy        import Enemy
 from Weapon.Weapon     import Bow, Sword
 from GameManagement.GameField import GameField
+from .Camera     import Camera
 
 class GameManager:
     def __init__(self, screen):
@@ -16,6 +17,8 @@ class GameManager:
         self.field      = GameField()
         self.spawn_timer = 0.0
         self.spawn_rate  = 2.0  # сек
+
+        self.camera = Camera(screen.get_size())
 
         # Подписываемся на события от оружия
         bus.subscribe(SpawnProjectile, lambda e: self.field.projectiles.append(e.projectile))
@@ -48,6 +51,8 @@ class GameManager:
 
         # Обновление игрока
         self.field.player.update(dt)
+
+        self.camera.update(self.field.player.pos)
 
         # Обновление и атака каждого врага
         for en in self.field.enemies:
@@ -92,14 +97,14 @@ class GameManager:
 
     def draw(self):
         self.screen.fill((30, 30, 30))
-        self.field.player.draw(self.screen)
+        self.field.player.draw(self.screen, self.camera)
 
         for en in self.field.enemies:
-            en.draw(self.screen)
+            en.draw(self.screen, self.camera)
         for p in self.field.projectiles:
-            p.draw(self.screen)
+            p.draw(self.screen, self.camera)
         for e in self.field.effects:
-            e.draw(self.screen)
+            e.draw(self.screen, self.camera)
 
         pygame.display.flip()
 

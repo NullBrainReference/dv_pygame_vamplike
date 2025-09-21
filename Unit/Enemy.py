@@ -4,6 +4,7 @@ from Unit.Unit import Unit
 from Weapon.Weapon import Weapon
 from UI.HPBar import draw_hp_bar
 from Animation.AnimationLibrary import ANIMATION_LIBRARY
+from GameManagement.Camera import Camera
 
 class Enemy(Unit):
     def __init__(self,
@@ -60,15 +61,18 @@ class Enemy(Unit):
             self.anim_timer -= frame_duration
             self.anim_frame_idx = (self.anim_frame_idx + 1) % len(self.current_anim.frames)
 
-    def draw(self, screen: pygame.Surface):
+# Unit/Enemy.py
+    def draw(self, screen: pygame.Surface, camera: Camera):
         frame = self.current_anim.frames[self.anim_frame_idx]
         if self.flip_horiz:
             frame = pygame.transform.flip(frame, True, False)
 
-        rect = frame.get_rect(center=self.pos)
+        screen_pos = camera.apply(self.pos)
+        rect = frame.get_rect(center=screen_pos)
         screen.blit(frame, rect)
 
-        draw_hp_bar(screen, self, offset_y=-20)
+        bar_pos = screen_pos + pygame.Vector2(0, -20)
+        draw_hp_bar(screen, self, pos=bar_pos)
 
     def on_death(self):
         print(f"{self.enemy_type} уничтожен!")
