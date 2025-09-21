@@ -19,6 +19,7 @@ from .Camera              import Camera
 from Effects.BonusSelectorEffect  import BonusSelectorEffect
 from Effects.RegenerationEffect   import RegenerationEffect
 from Effects.DamageBoostEffect    import DamageBoostEffect
+from Effects.SpeedBoostEffect     import SpeedBoostEffect
 
 
 class GameManager:
@@ -48,6 +49,7 @@ class GameManager:
             ("Healing regen",  RegenerationEffect(regen_rate=10, duration=10)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
             ("Damage +2", DamageBoostEffect(amount=2)),
+            ("Speed +8",  SpeedBoostEffect(amount=8)),
         ]
         bus.emit(ShowBonusSelector(options=options))
 

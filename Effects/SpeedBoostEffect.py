@@ -1,9 +1,8 @@
 from .Effect import Effect
 
-class DamageBoostEffect(Effect):
+class SpeedBoostEffect(Effect):
 
     def __init__(self, amount: float):
-        # duration=0.0 — эффект мгновенный
         super().__init__(None)
         self.amount   = amount
         self._applied = False
@@ -12,9 +11,7 @@ class DamageBoostEffect(Effect):
         if self._applied:
             return
 
-        if hasattr(unit, "weapons"):
-            for weapon in unit.weapons.values():
-                weapon.damage += self.amount
+        unit.speed += self.amount
 
         self._applied = True
         # makes expired
