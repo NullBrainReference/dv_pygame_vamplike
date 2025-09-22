@@ -42,8 +42,8 @@ class GameManager:
         self.camera = Camera(screen.get_size())
 
         self.spawners = [ 
-            SpawnController(Bow, 2, "Spider", 0.5, 1.2, 6, 28, 1.6, 300),
-            SpawnController(Sword, 1.5, "Zombie", 1, 1.4, 14, 48, 2, 30)]
+            SpawnController(Bow, 2, "Spider", 0.1, 1.2, 6, 28, 1.6, 300),
+            SpawnController(Sword, 1.6, "Zombie", 0.8, 1.4, 14, 48, 2, 30)]
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
