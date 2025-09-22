@@ -21,6 +21,8 @@ from Effects.BonusSelectorEffect  import BonusSelectorEffect
 from Effects.RegenerationEffect   import RegenerationEffect
 from Effects.DamageBoostEffect    import DamageBoostEffect
 from Effects.SpeedBoostEffect     import SpeedBoostEffect
+from Effects.AdrenalinSpeedEffect import AdrenalinSpeedEffect
+from Effects.SpikesCastEffect     import SpikesCastEffect
 
 
 MAX_PROJECTILE_DIST_SQ = 1000 ** 2
@@ -49,12 +51,21 @@ class GameManager:
         self.paused = True
         self.field.player.max_hp += 5
 
+        bonus_options = [
+            ("Spikes",  SpikesCastEffect()),
+            ("Adrenalin",  AdrenalinSpeedEffect())
+        ]
+
         options = [
             ("Healing regen",  RegenerationEffect(regen_rate=10, duration=20)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
             ("Damage +2", DamageBoostEffect(amount=2)),
             ("Speed +8",  SpeedBoostEffect(amount=8)),
         ]
+
+        extra_name, extra_cls = random.choice(bonus_options)
+        options.append((extra_name, extra_cls))
+
         bus.emit(ShowBonusSelector(options=options))
 
     def _on_bonus_selected(self, e: BonusSelected):
