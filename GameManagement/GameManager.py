@@ -118,10 +118,16 @@ class GameManager:
             self.spawn_timer -= self.spawn_rate
             pos = self._random_spawn_pos(400, self.field.player.pos)
 
-            if random.random() < 0.5:
-                weapon, etype, speed, scale = Bow(range=300, rate=1.2, damage=6), "Spider", 25, 1.6
+            progression = min(self.field.player.level / 10, 1.0)
+
+            if random.random() < 0.25 + 0.35 * progression:
+                weapon, etype, speed, scale = Bow(
+                    range=300, rate=1.2 - 0.2 * progression, damage=6), "Spider", 25, 1.6
             else:
-                weapon, etype, speed, scale = Sword(range=20, rate=1.5, damage=12), "Zombie", 48, 2.4
+                weapon, etype, speed, scale = Sword(
+                    range=20, 
+                    rate=1.5, 
+                    damage=12 + 4 * progression), "Zombie", 48 + 10 * progression, 2.4
 
             self.field.enemies.append(
                 Enemy(pos, weapon, etype, speed, scale)
