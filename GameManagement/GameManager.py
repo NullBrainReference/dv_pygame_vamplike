@@ -59,7 +59,7 @@ class GameManager:
         options = [
             ("Healing regen",  RegenerationEffect(regen_rate=10, duration=20)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
-            ("Damage +2", DamageBoostEffect(amount=2)),
+            ("Damage +3", DamageBoostEffect(amount=3)),
             ("Speed +8",  SpeedBoostEffect(amount=8)),
         ]
 
@@ -113,21 +113,21 @@ class GameManager:
             return
 
         # 4) Спавн врагов
+        progression = min(self.field.player.level / 10, 1.0)
+        rate = self.spawn_rate - 0.8 * progression
         self.spawn_timer += dt
-        if self.spawn_timer >= self.spawn_rate:
-            self.spawn_timer -= self.spawn_rate
+        if self.spawn_timer >= rate:
+            self.spawn_timer -= rate
             pos = self._random_spawn_pos(400, self.field.player.pos)
 
-            progression = min(self.field.player.level / 10, 1.0)
-
-            if random.random() < 0.25 + 0.35 * progression:
+            if random.random() < 0.15 + 0.25 * progression:
                 weapon, etype, speed, scale = Bow(
                     range=300, rate=1.2 - 0.2 * progression, damage=6), "Spider", 25, 1.6
             else:
                 weapon, etype, speed, scale = Sword(
                     range=20, 
                     rate=1.5, 
-                    damage=12 + 4 * progression), "Zombie", 48 + 10 * progression, 2.4
+                    damage=12 + 6 * progression), "Zombie", 46 + 16 * progression, 2.4
 
             self.field.enemies.append(
                 Enemy(pos, weapon, etype, speed, scale)
