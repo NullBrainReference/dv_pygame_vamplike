@@ -10,6 +10,7 @@ class Unit(ABC):
         self.weapon = weapon
         self.effects: list[Effect] = []
         self.is_dead = False
+        self.team    = None
 
     def add_effect(self, effect: Effect):
         self.effects.append(effect)
@@ -36,14 +37,6 @@ class Unit(ABC):
         for eff in self.effects:
             eff.apply(0.0, self, event="heal", amount=amount)
         # self.effects = [e for e in self.effects if not e.is_expired]
-
-    # def attack(self, target):
-    #     if self.is_dead:
-    #         return
-    #     for eff in self.effects:
-    #         eff.apply(0.0, self, event="attack", target=target)
-    #     self.weapon.on_attack(origin=self.pos, targets=[target], owner=self)
-    #     self.effects = [e for e in self.effects if not e.is_expired]
 
     def on_attack(self, targets):
         if self.is_dead:

@@ -8,7 +8,7 @@ from UI.WeaponSelector import draw_weapon_icons
 from UI.LevelBar import draw_level_progress
 from GameManagement.Camera import Camera
 from Effects.RegenerationEffect import RegenerationEffect
-from Weapon.Weapon import Bow
+from Weapon.Bow import Bow
 from Weapon.Weapon import Halberd
 from Events.Events import GainExp, LevelUp, BonusSelected
 from Events.EventBus import bus
@@ -54,6 +54,7 @@ class Player(Unit):
         self.flip_horiz     = False
 
         self.is_dead = False
+        self.team = "player"
 
         bus.subscribe(GainExp,       self._on_gain_exp)
         bus.subscribe(BonusSelected, self._on_bonus_selected)

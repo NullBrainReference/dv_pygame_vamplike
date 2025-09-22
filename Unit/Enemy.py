@@ -33,6 +33,7 @@ class Enemy(Unit):
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
         self.flip_horiz     = False  # отразить по горизонтали (для side)
+        self.team = "enemy"
 
     def update(self, dt: float, player_pos: pygame.Vector2):
         # Обновляем оружие

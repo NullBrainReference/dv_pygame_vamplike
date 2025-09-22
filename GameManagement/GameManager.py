@@ -13,7 +13,8 @@ from Events.Events        import (
     BonusSelected,
 )
 from Unit.Enemy           import Enemy
-from Weapon.Weapon        import Bow, Sword
+from Weapon.Weapon        import Sword
+from Weapon.Bow           import Bow
 from GameManagement.GameField import GameField
 from .Camera              import Camera
 from Effects.BonusSelectorEffect  import BonusSelectorEffect
@@ -21,6 +22,9 @@ from Effects.RegenerationEffect   import RegenerationEffect
 from Effects.DamageBoostEffect    import DamageBoostEffect
 from Effects.SpeedBoostEffect     import SpeedBoostEffect
 
+
+MAX_PROJECTILE_DIST_SQ = 1000 ** 2
+HIT_RADIUS_SQ          = 20 ** 2
 
 class GameManager:
     def __init__(self, screen):
@@ -33,7 +37,6 @@ class GameManager:
 
         self.camera = Camera(screen.get_size())
 
-        # Подписка на события
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
         bus.subscribe(LevelUp,          self._on_level_up)
@@ -55,8 +58,7 @@ class GameManager:
         bus.emit(ShowBonusSelector(options=options))
 
     def _on_bonus_selected(self, e: BonusSelected):
-        # Снимаем паузу — игра продолжается,
-        # сам эффект селектор удалится в этапе очистки
+
         self.paused = False
 
     def _random_spawn_pos(self, radius: float,
@@ -136,17 +138,28 @@ class GameManager:
             p.update(dt)
 
         # 9) Проверка попаданий
-        for p in list(self.field.projectiles):
-            if p.target is None:
-                p.alive = False
-            elif p.target == self.field.player and (p.pos - self.field.player.pos).length() < 20:
-                self.field.player.take_damage(p.damage)
-                p.alive = False
+        units = [self.field.player] + self.field.enemies
+
+        # collision & cleanup: iterate backwards
+        for i in range(len(self.field.projectiles) - 1, -1, -1):
+            proj = self.field.projectiles[i]
+            # out-of-range or dead
+            if not proj.alive or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ:
+                del self.field.projectiles[i]
+                continue
+
+            if proj.target:
+                # directed projectile
+                if (proj.pos - proj.target.pos).length_squared() < HIT_RADIUS_SQ:
+                    proj.target.take_damage(proj.damage)
+                    proj.alive = False
             else:
-                for en in self.field.enemies:
-                    if p.target == en and (p.pos - en.pos).length() < 20:
-                        en.take_damage(p.damage)
-                        p.alive = False
+                # free projectile: hit any enemy of opposite team
+                for unit in units:
+                    if unit.team != proj.team and (proj.pos - unit.pos).length_squared() < HIT_RADIUS_SQ:
+                        unit.take_damage(proj.damage)
+                        proj.alive = False
+                        break
 
     def draw(self):
         self.screen.fill((30, 30, 30))

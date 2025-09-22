@@ -1,6 +1,6 @@
 import pygame
 from Unit.Player import Player
-from Weapon.Weapon import Bow
+from Weapon.Bow import Bow
 
 class GameField:
     def __init__(self):

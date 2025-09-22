@@ -30,26 +30,34 @@ class Weapon:
 
 
 class Projectile:
-    def __init__(self, pos, direction, damage, target):
-        self.pos       = pos
+    def __init__(self,
+                 pos: pygame.Vector2,
+                 direction: pygame.Vector2,
+                 damage: float,
+                 owner,
+                 target=None):
+        
+        self.pos       = pos.copy()
+        self.spawn_pos = pos.copy()
         self.direction = direction.normalize()
         self.speed     = 300
         self.damage    = damage
-        self.alive     = True
+        self.owner     = owner
+        self.team      = getattr(owner, "team", None)
         self.target    = target
+        self.alive     = True
 
         self.original = pygame.image.load(
             "Assets/Weapons/projectile.png"
         ).convert_alpha()
-
-        #    math.atan2 wants (y, x) where +Y is up, so we negate direction.y
         base_angle = math.degrees(
             math.atan2(-self.direction.y, self.direction.x)
         )
-        self.angle = (base_angle + 180) % 360
-
-        self.image = pygame.transform.rotate(self.original, self.angle)
-        self.rect  = self.image.get_rect()
+        self.image = pygame.transform.rotate(
+            self.original,
+            (base_angle + 180) % 360
+        )
+        self.rect = self.image.get_rect()
 
     def update(self, dt: float):
         self.pos += self.direction * self.speed * dt
@@ -58,30 +66,6 @@ class Projectile:
         screen_pos       = camera.apply(self.pos)
         self.rect.center = screen_pos
         screen.blit(self.image, self.rect)
-
-
-class Bow(Weapon):
-    def on_attack(self, origin, targets, owner=None):
-        if not self.can_attack():
-            return
-        self.reset_timer()
-
-        # targets in range
-        in_range = [
-            t for t in targets
-            if (t.pos - origin).length_squared() <= self.range * self.range
-        ]
-        if not in_range:
-            return
-
-        owner.on_attack(targets)
-
-        # Выбираем самую близкую из тех, что в пределах range
-        target    = min(in_range, key=lambda t: (t.pos - origin).length_squared())
-        direction = (target.pos - origin).normalize()
-
-        projectile = Projectile(origin.copy(), direction, self.damage, target)
-        bus.emit(SpawnProjectile(projectile))
 
 
 
