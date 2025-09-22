@@ -4,6 +4,8 @@ from Animation.AnimationLibrary import ANIMATION_LIBRARY
 from .Unit import Unit
 from Weapon.Weapon import Weapon
 from UI.HPBar import draw_hp_bar
+from UI.WeaponSelector import draw_weapon_icons
+from UI.LevelBar import draw_level_progress
 from GameManagement.Camera import Camera
 from Effects.RegenerationEffect import RegenerationEffect
 from Weapon.Weapon import Bow
@@ -114,6 +116,8 @@ class Player(Unit):
 
             bar_pos = camera.apply(self.pos) + pygame.Vector2(0, -20)
             draw_hp_bar(screen, self, pos=bar_pos)
+            draw_weapon_icons(self, screen)
+            draw_level_progress(self, screen)
 
 
     def on_death(self):

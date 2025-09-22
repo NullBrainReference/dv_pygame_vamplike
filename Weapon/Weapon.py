@@ -23,6 +23,10 @@ class Weapon:
 
     def on_attack(self, origin, targets, owner=None):
         raise NotImplementedError
+    
+    @property
+    def icon_path(self) -> str:
+        return "Assets/Weapons/projectile.png"
 
 
 class Projectile:
@@ -70,6 +74,8 @@ class Bow(Weapon):
         if not in_range:
             return
 
+        owner.on_attack(targets)
+
         # Выбираем самую близкую из тех, что в пределах range
         target    = min(in_range, key=lambda t: (t.pos - origin).length_squared())
         direction = (target.pos - origin).normalize()
@@ -93,6 +99,8 @@ class Sword(Weapon):
                 in_range = True
         if not in_range:
             return
+        
+        owner.on_attack(targets)
         
         e = SwordSwingEffect(origin.copy(), self.range)
         bus.emit(SpawnEffect(e))
@@ -153,12 +161,18 @@ class Halberd(Weapon):
         
         if not in_range:
             return
+        
+        owner.on_attack(targets)
 
         effect = HalberdSpinEffect(owner,
                                    self.sprite,
                                    self.spin_speed,
                                    self.duration)
         bus.emit(SpawnEffect(effect))
+
+    @property
+    def icon_path(self) -> str:
+        return "Assets/Weapons/halberd.png"
 
 
 class HalberdSpinEffect:

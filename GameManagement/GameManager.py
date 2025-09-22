@@ -44,9 +44,10 @@ class GameManager:
     def _on_level_up(self, e: LevelUp):
         # Ставим игру на паузу и показываем селектор
         self.paused = True
+        self.field.player.max_hp += 5
 
         options = [
-            ("Healing regen",  RegenerationEffect(regen_rate=10, duration=10)),
+            ("Healing regen",  RegenerationEffect(regen_rate=10, duration=20)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
             ("Damage +2", DamageBoostEffect(amount=2)),
             ("Speed +8",  SpeedBoostEffect(amount=8)),

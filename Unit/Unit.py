@@ -1,41 +1,62 @@
 
+import pygame
 from abc import ABC, abstractmethod
-from Weapon.Weapon import Weapon
+from Effects.Effect import Effect
 
 class Unit(ABC):
-    def __init__(self, hp: float, weapon: Weapon):
+    def __init__(self, hp: float, weapon):
         self.max_hp = hp
         self.hp     = hp
         self.weapon = weapon
-        self.scale  = 1.0
+        self.effects: list[Effect] = []
+        self.is_dead = False
 
-        self.effects: list = []
-
-    def add_effect(self, effect):
+    def add_effect(self, effect: Effect):
         self.effects.append(effect)
 
     def update_effects(self, dt: float):
-        for i in range(len(self.effects)-1, -1, -1):
-            eff = self.effects[i]
+        for eff in self.effects:
             eff.update(dt, self)
-            if eff.is_expired:
-                del self.effects[i]
+        self.effects = [e for e in self.effects if not e.is_expired]
 
     def take_damage(self, amount: float):
-        self.hp -= amount
-        if self.hp <= 0:
-            self.hp = 0
+        if self.is_dead:
+            return
+        self.hp = max(self.hp - amount, 0)
+        for eff in self.effects:
+            eff.apply(0.0, self, event="damage", amount=amount)
+        # self.effects = [e for e in self.effects if not e.is_expired]
+        if self.hp == 0:
             self.on_death()
 
     def heal(self, amount: float):
+        if self.is_dead:
+            return
         self.hp = min(self.hp + amount, self.max_hp)
+        for eff in self.effects:
+            eff.apply(0.0, self, event="heal", amount=amount)
+        # self.effects = [e for e in self.effects if not e.is_expired]
+
+    # def attack(self, target):
+    #     if self.is_dead:
+    #         return
+    #     for eff in self.effects:
+    #         eff.apply(0.0, self, event="attack", target=target)
+    #     self.weapon.on_attack(origin=self.pos, targets=[target], owner=self)
+    #     self.effects = [e for e in self.effects if not e.is_expired]
+
+    def on_attack(self, targets):
+        if self.is_dead:
+            return
+        for eff in self.effects:
+            eff.apply(0.0, self, event="attack", targets=targets)
 
     @abstractmethod
     def update(self, dt: float):
         pass
 
     @abstractmethod
-    def draw(self, screen, camera):
+    def draw(self, screen: pygame.Surface, camera):
         pass
 
     @abstractmethod

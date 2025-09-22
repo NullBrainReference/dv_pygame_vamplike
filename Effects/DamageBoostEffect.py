@@ -3,19 +3,21 @@ from .Effect import Effect
 class DamageBoostEffect(Effect):
 
     def __init__(self, amount: float):
-        # duration=0.0 — эффект мгновенный
         super().__init__(None)
         self.amount   = amount
         self._applied = False
 
-    def apply(self, dt: float, unit):
+    def apply(self,
+              dt: float,
+              unit,
+              event: str | None = None,
+              **kwargs):
+
         if self._applied:
             return
 
-        if hasattr(unit, "weapons"):
-            for weapon in unit.weapons.values():
-                weapon.damage += self.amount
+        for weapon in getattr(unit, "weapons", {}).values():
+            weapon.damage += self.amount
 
         self._applied = True
-        # makes expired
-        self.elapsed = self.duration
+        self.elapsed  = self.duration
