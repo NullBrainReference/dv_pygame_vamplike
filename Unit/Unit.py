@@ -2,6 +2,7 @@
 import pygame
 from abc import ABC, abstractmethod
 from Effects.Effect import Effect
+from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 
 class Unit(ABC):
     def __init__(self, hp: float, weapon):
@@ -11,6 +12,9 @@ class Unit(ABC):
         self.effects: list[Effect] = []
         self.is_dead = False
         self.team    = None
+        self.flash_tint = None
+
+        self.add_effect(DamageFlashEffect(half_duration=0.15))
 
     def add_effect(self, effect: Effect):
         self.effects.append(effect)

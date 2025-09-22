@@ -8,6 +8,7 @@ from UI.WeaponSelector import draw_weapon_icons
 from UI.LevelBar import draw_level_progress
 from GameManagement.Camera import Camera
 from Effects.RegenerationEffect import RegenerationEffect
+from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 from Weapon.Bow import Bow
 from Weapon.Weapon import Halberd
 from Events.Events import GainExp, LevelUp, BonusSelected
@@ -52,6 +53,7 @@ class Player(Unit):
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
         self.flip_horiz     = False
+        self.flash_tint  = None
 
         self.is_dead = False
         self.team = "player"
@@ -103,19 +105,26 @@ class Player(Unit):
 
     def draw(self, screen: pygame.Surface, camera: Camera):
         orig = self.current_anim.frames[self.anim_frame_idx]
-        sc = self.scale
-        frame = pygame.transform.scale(orig, (orig.get_width()*sc, orig.get_height()*sc))
-        # frame = self.current_anim.frames[self.anim_frame_idx]
+        sc   = self.scale
+        frame = pygame.transform.scale(
+            orig,
+            (orig.get_width() * sc, orig.get_height() * sc)
+        )
         if self.flip_horiz:
             frame = pygame.transform.flip(frame, True, False)
 
+        tint = getattr(self, "flash_tint", None)
+        if tint:
+            overlay = pygame.Surface(frame.get_size(), pygame.SRCALPHA)
+            overlay.fill(tint)
+            frame.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
         screen_pos = camera.apply(self.pos)
-        rect = frame.get_rect(center=screen_pos)
+        rect       = frame.get_rect(center=screen_pos)
         screen.blit(frame, rect)
 
         if not self.is_dead:
-
-            bar_pos = camera.apply(self.pos) + pygame.Vector2(0, -20)
+            bar_pos = screen_pos + pygame.Vector2(0, -20)
             draw_hp_bar(screen, self, pos=bar_pos)
             draw_weapon_icons(self, screen)
             draw_level_progress(self, screen)

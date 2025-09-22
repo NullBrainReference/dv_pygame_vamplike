@@ -7,6 +7,7 @@ from Animation.AnimationLibrary import ANIMATION_LIBRARY
 from GameManagement.Camera import Camera
 from Events.Events      import GainExp
 from Events.EventBus    import bus
+from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 
 class Enemy(Unit):
     def __init__(self,
@@ -22,24 +23,25 @@ class Enemy(Unit):
 
         self.scale = scale
 
-        # Загрузка анимаций для этого типа (idle, side, up, down)
         self.animations = {
             state: ANIMATION_LIBRARY.get(f"{enemy_type}.{state}")
             for state in ("idle", "side", "up", "down")
         }
 
-        # Состояние анимации
+        # Anim state
         self.current_anim   = self.animations["idle"]
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
-        self.flip_horiz     = False  # отразить по горизонтали (для side)
+        self.flip_horiz     = False
+        self.flash_tint     = None
+
         self.team = "enemy"
 
     def update(self, dt: float, player_pos: pygame.Vector2):
-        # Обновляем оружие
+        self.update_effects(dt)
+
         self.weapon.update(dt)
 
-        # Движемся к игроку
         direction = player_pos - self.pos
         
 
@@ -69,17 +71,25 @@ class Enemy(Unit):
             self.anim_timer -= frame_duration
             self.anim_frame_idx = (self.anim_frame_idx + 1) % len(self.current_anim.frames)
 
-# Unit/Enemy.py
     def draw(self, screen: pygame.Surface, camera: Camera):
-        # frame = self.current_anim.frames[self.anim_frame_idx]
         orig = self.current_anim.frames[self.anim_frame_idx]
-        sc = self.scale
-        frame = pygame.transform.scale(orig, (orig.get_width()*sc, orig.get_height()*sc))
+        sc   = self.scale
+        frame = pygame.transform.scale(
+            orig,
+            (orig.get_width() * sc, orig.get_height() * sc)
+        )
         if self.flip_horiz:
             frame = pygame.transform.flip(frame, True, False)
 
+        # apply tint if set by DamageFlashEffect
+        tint = getattr(self, "flash_tint", None)
+        if tint:
+            overlay = pygame.Surface(frame.get_size(), pygame.SRCALPHA)
+            overlay.fill(tint)
+            frame.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
         screen_pos = camera.apply(self.pos)
-        rect = frame.get_rect(center=screen_pos)
+        rect       = frame.get_rect(center=screen_pos)
         screen.blit(frame, rect)
 
         bar_pos = screen_pos + pygame.Vector2(0, -20)
