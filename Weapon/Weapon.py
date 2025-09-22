@@ -84,7 +84,7 @@ class Sword(Weapon):
         if not in_range:
             return
         
-        owner.on_attack(targets)
+        owner.on_attack(in_range)
         
         e = SwordSwingEffect(origin.copy(), self.range)
         bus.emit(SpawnEffect(e))
@@ -137,16 +137,18 @@ class Halberd(Weapon):
         # 1) мгновенный урон всем в радиусе
         in_range = False
 
+        close_targets = []
         for t in targets:
             if (t.pos - origin).length() <= self.range:
                 t.take_damage(self.damage)
                 self.reset_timer()
+                close_targets.append(t)
                 in_range = True
         
         if not in_range:
             return
         
-        owner.on_attack(targets)
+        owner.on_attack(close_targets)
 
         effect = HalberdSpinEffect(owner,
                                    self.sprite,

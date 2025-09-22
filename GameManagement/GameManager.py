@@ -23,6 +23,8 @@ from Effects.DamageBoostEffect    import DamageBoostEffect
 from Effects.SpeedBoostEffect     import SpeedBoostEffect
 from Effects.AdrenalinSpeedEffect import AdrenalinSpeedEffect
 from Effects.SpikesCastEffect     import SpikesCastEffect
+from Effects.MultiCastEffect      import MultiCastEffect
+from Effects.VampiricEffect       import VampiricEffect
 
 from .SpawnController import SpawnController
 
@@ -59,11 +61,12 @@ class GameManager:
 
         bonus_options = [
             ("Spikes",  SpikesCastEffect()),
-            ("Adrenalin",  AdrenalinSpeedEffect())
+            ("Adrenalin",  AdrenalinSpeedEffect()),
+            ("Multicast", MultiCastEffect())
         ]
 
         options = [
-            ("Healing regen",  RegenerationEffect(regen_rate=10, duration=20)),
+            ("Vampiric + 3",  VampiricEffect(amount=3)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
             ("Damage +3", DamageBoostEffect(amount=3)),
             ("Speed +8",  SpeedBoostEffect(amount=8)),

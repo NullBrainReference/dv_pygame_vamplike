@@ -28,16 +28,15 @@ class Bow(Weapon):
         if not in_range:
             return
 
-        # notify owner about the attack event
-        if owner:
-            owner.on_attack(targets)
-
         # choose nearest target
         target = min(
             in_range,
             key=lambda t: (t.pos - origin).length_squared()
         )
         direction = (target.pos - origin).normalize()
+
+        if owner:
+            owner.on_attack([target])
 
         # spawn and emit projectile
         proj = Projectile(
