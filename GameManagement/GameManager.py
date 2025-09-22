@@ -24,6 +24,8 @@ from Effects.SpeedBoostEffect     import SpeedBoostEffect
 from Effects.AdrenalinSpeedEffect import AdrenalinSpeedEffect
 from Effects.SpikesCastEffect     import SpikesCastEffect
 
+from .SpawnController import SpawnController
+
 
 MAX_PROJECTILE_DIST_SQ = 1000 ** 2
 HIT_RADIUS_SQ          = 20 ** 2
@@ -38,6 +40,10 @@ class GameManager:
         self.paused      = False
 
         self.camera = Camera(screen.get_size())
+
+        self.spawners = [ 
+            SpawnController(Bow, 2, "Spider", 0.5, 1.2, 6, 28, 1.6, 300),
+            SpawnController(Sword, 1.5, "Zombie", 1, 1.4, 14, 48, 2, 30)]
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
@@ -114,24 +120,28 @@ class GameManager:
 
         # 4) Спавн врагов
         progression = min(self.field.player.level / 10, 1.0)
-        rate = self.spawn_rate - 0.8 * progression
-        self.spawn_timer += dt
-        if self.spawn_timer >= rate:
-            self.spawn_timer -= rate
-            pos = self._random_spawn_pos(400, self.field.player.pos)
+        # rate = self.spawn_rate - 0.8 * progression
+        # self.spawn_timer += dt
+        # if self.spawn_timer >= rate:
+        #     self.spawn_timer -= rate
+        #     pos = self._random_spawn_pos(400, self.field.player.pos)
 
-            if random.random() < 0.15 + 0.25 * progression:
-                weapon, etype, speed, scale = Bow(
-                    range=300, rate=1.2 - 0.2 * progression, damage=6), "Spider", 25, 1.6
-            else:
-                weapon, etype, speed, scale = Sword(
-                    range=20, 
-                    rate=1.5, 
-                    damage=12 + 6 * progression), "Zombie", 46 + 16 * progression, 2.4
+        #     if random.random() < 0.15 + 0.25 * progression:
+        #         weapon, etype, speed, scale = Bow(
+        #             range=300, rate=1.2 - 0.2 * progression, damage=6), "Spider", 25, 1.6
+        #     else:
+        #         weapon, etype, speed, scale = Sword(
+        #             range=20, 
+        #             rate=1.5, 
+        #             damage=12 + 6 * progression), "Zombie", 46 + 16 * progression, 2.4
 
-            self.field.enemies.append(
-                Enemy(pos, weapon, etype, speed, scale)
-            )
+        #     self.field.enemies.append(
+        #         Enemy(pos, weapon, etype, speed, scale)
+        #     )
+        
+        #new spawn
+        for spawner in self.spawners:
+            spawner.spawn(dt, progression, self.field)
 
         # 5) Обновляем игрока и камеру
         self.field.player.update(dt)

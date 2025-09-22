@@ -4,7 +4,6 @@ from typing import Dict
 _ICON_CACHE: Dict[str, pygame.Surface] = {}
 
 def draw_weapon_icons(player, screen: pygame.Surface):
-
     screen_w, screen_h = screen.get_size()
     icon_size = 48
     spacing   = 10

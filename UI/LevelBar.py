@@ -44,6 +44,6 @@ def draw_level_progress(player, screen: pygame.Surface):
         _FONT = pygame.font.Font("Assets/Font/Caudex-Regular.ttf", 20)
 
     # Текст "LV X"
-    txt_surf = _FONT.render(f"LV {player.level}", True, (220, 220, 220))
+    txt_surf = _FONT.render(f"LVL. {player.level}", True, (220, 220, 220))
     txt_pos  = (bar_x, bar_y - margin_y - txt_surf.get_height())
     screen.blit(txt_surf, txt_pos)
