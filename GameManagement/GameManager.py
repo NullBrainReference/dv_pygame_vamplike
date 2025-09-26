@@ -11,6 +11,8 @@ from Events.Events        import (
     LevelUp,
     ShowBonusSelector,
     BonusSelected,
+    RequestTargets,
+    ProvideTargets
 )
 from Unit.Enemy           import Enemy
 from Weapon.Weapon        import Sword
@@ -25,6 +27,7 @@ from Effects.AdrenalinSpeedEffect import AdrenalinSpeedEffect
 from Effects.SpikesCastEffect     import SpikesCastEffect
 from Effects.MultiCastEffect      import MultiCastEffect
 from Effects.VampiricEffect       import VampiricEffect
+from Effects.LightningHitEffect   import LightningHitEffect
 
 from .SpawnController import SpawnController
 
@@ -43,9 +46,48 @@ class GameManager:
 
         self.camera = Camera(screen.get_size())
 
-        self.spawners = [ 
-            SpawnController(Bow, 2, "Spider", 0.1, 1.2, 6, 28, 1.6, 300),
-            SpawnController(Sword, 1.6, "Zombie", 0.8, 1.4, 14, 48, 2, 30)]
+        self.spawners = [
+            SpawnController(
+                hp               = 30,
+                weapon_cls       = Bow,
+                spawn_rate       = 2.0,
+                name             = "Spider",
+                chance           = 0.1,
+                attack_rate      = 1.2,
+                damage           = 6,
+                speed            = 28,
+                scale            = 1.6,
+                target_range     = 300,
+                progression_lvl  = 0.0,
+            ),
+            SpawnController(
+                hp               = 30,
+                weapon_cls       = Sword,
+                spawn_rate       = 1.6,
+                name             = "Zombie",
+                chance           = 0.8,
+                attack_rate      = 1.4,
+                damage           = 14,
+                speed            = 48,
+                scale            = 2.0,
+                target_range     = 30,
+                progression_lvl  = 0.0,
+            ),
+            SpawnController(
+                hp               = 70,
+                weapon_cls       = Sword,
+                spawn_rate       = 12,
+                name             = "Zombie",
+                chance           = 0.3,
+                attack_rate      = 1.4,
+                damage           = 26,
+                speed            = 62,
+                scale            = 4.5,
+                target_range     = 48,
+                progression_lvl  = 0.9,
+                reward           = 120
+            ),
+        ]
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
@@ -53,6 +95,19 @@ class GameManager:
         bus.subscribe(ShowBonusSelector,
                       lambda e: self.field.effects.append(BonusSelectorEffect(e.options)))
         bus.subscribe(BonusSelected,    self._on_bonus_selected)
+        bus.subscribe(RequestTargets, self._on_request_targets)
+
+        self._select_start_ability()
+
+    def _on_request_targets(self, e: RequestTargets):
+        units = self.field.enemies + [self.field.player]
+        
+        candidates = [
+            u for u in units
+            if (u.pos - e.origin).length() <= e.radius
+        ]
+        
+        bus.emit(ProvideTargets(effect=e.effect, candidates=candidates))
 
     def _on_level_up(self, e: LevelUp):
         # Ставим игру на паузу и показываем селектор
@@ -60,9 +115,10 @@ class GameManager:
         self.field.player.max_hp += 5
 
         bonus_options = [
-            ("Spikes",  SpikesCastEffect()),
-            ("Adrenalin",  AdrenalinSpeedEffect()),
-            ("Multicast", MultiCastEffect())
+            ("Spikes: Cast spikes on hit taken (25%)",  SpikesCastEffect()),
+            ("Adrenalin: 40 speed on hit taken (25%)",  AdrenalinSpeedEffect()),
+            ("Multicast: 3/4 attack cd recuction (20%)\nOn your attack", MultiCastEffect()),
+            ("Lightning: Casts lightning (20%)\nOn your attack", LightningHitEffect())
         ]
 
         options = [
@@ -87,6 +143,19 @@ class GameManager:
         x     = center.x + radius * math.cos(angle)
         y     = center.y + radius * math.sin(angle)
         return pygame.Vector2(x, y)
+
+    def _select_start_ability(self):
+        self.paused = True
+
+        options = [
+            ("Spikes: Cast spikes on hit taken (25%)",  SpikesCastEffect()),
+            ("Adrenalin: 40 speed on hit taken (25%)",  AdrenalinSpeedEffect()),
+            ("Multicast: 3/4 attack cd recuction (20%)\nOn your attack", MultiCastEffect()),
+            ("Lightning: Casts lightning (20%)\nOn your attack", LightningHitEffect())
+        ]
+
+        bus.emit(ShowBonusSelector(options=options))
+
 
     def update(self, dt: float):
         # 1) Всегда обновляем все эффекты (включая селектор)
@@ -123,24 +192,7 @@ class GameManager:
 
         # 4) Спавн врагов
         progression = min(self.field.player.level / 10, 1.0)
-        # rate = self.spawn_rate - 0.8 * progression
-        # self.spawn_timer += dt
-        # if self.spawn_timer >= rate:
-        #     self.spawn_timer -= rate
-        #     pos = self._random_spawn_pos(400, self.field.player.pos)
 
-        #     if random.random() < 0.15 + 0.25 * progression:
-        #         weapon, etype, speed, scale = Bow(
-        #             range=300, rate=1.2 - 0.2 * progression, damage=6), "Spider", 25, 1.6
-        #     else:
-        #         weapon, etype, speed, scale = Sword(
-        #             range=20, 
-        #             rate=1.5, 
-        #             damage=12 + 6 * progression), "Zombie", 46 + 16 * progression, 2.4
-
-        #     self.field.enemies.append(
-        #         Enemy(pos, weapon, etype, speed, scale)
-        #     )
         
         #new spawn
         for spawner in self.spawners:

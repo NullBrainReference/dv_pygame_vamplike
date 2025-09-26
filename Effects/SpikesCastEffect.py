@@ -15,8 +15,8 @@ class SpikesCastEffect(Effect):
     def __init__(self,
                  count: int = 12,
                  damage: float = 8,
-                 chance: float = 0.2,
-                 cooldown: float = 0.3):
+                 chance: float = 0.25,
+                 cooldown: float = 0.2):
         super().__init__(None)
         self.count    = count
         self.damage   = damage

@@ -12,14 +12,17 @@ from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 class Enemy(Unit):
     def __init__(self,
                  pos: pygame.Vector2,
+                 hp: float,
                  weapon: Weapon,
                  enemy_type: str,
                  speed: float = 4,
-                 scale: int = 1):
-        super().__init__(hp=30, weapon=weapon)
+                 scale: int = 1,
+                 reward: int = 30):
+        super().__init__(hp=hp, weapon=weapon)
         self.pos = pos
         self.speed = speed
         self.enemy_type = enemy_type
+        self.reward = reward
 
         self.scale = scale
 
@@ -96,6 +99,6 @@ class Enemy(Unit):
         draw_hp_bar(screen, self, pos=bar_pos)
 
     def on_death(self):
-        bus.emit(GainExp(amount=30))
-        print(f"{self.enemy_type} Killed! Exp: +{30}")
+        bus.emit(GainExp(amount=self.reward))
+        print(f"{self.enemy_type} Killed! Exp: +{self.reward}")
 

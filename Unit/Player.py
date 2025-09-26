@@ -14,6 +14,7 @@ from Weapon.Weapon import Halberd
 from Events.Events import GainExp, LevelUp, BonusSelected
 from Events.EventBus import bus
 
+from Effects.LightningHitEffect import LightningHitEffect
 
 class Player(Unit):
     def __init__(self, weapon: Weapon):
@@ -62,6 +63,7 @@ class Player(Unit):
         bus.subscribe(BonusSelected, self._on_bonus_selected)
 
         self.add_effect(RegenerationEffect(regen_rate=3, duration=None))
+        # self.add_effect(LightningHitEffect())
 
     def update(self, dt: float):
         if self.is_dead:

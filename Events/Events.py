@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pygame import Vector2
 
 @dataclass
 class SpawnProjectile:
@@ -23,3 +24,14 @@ class ShowBonusSelector:
 @dataclass
 class BonusSelected:
     effect: object
+
+@dataclass
+class RequestTargets:
+    effect: object
+    origin: Vector2
+    radius: float
+
+@dataclass
+class ProvideTargets:
+    effect: object
+    candidates: list

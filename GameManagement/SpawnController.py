@@ -1,44 +1,68 @@
 import pygame, math, random
+from dataclasses import dataclass, field
 from Unit.Enemy import Enemy
 
-
+@dataclass
 class SpawnController:
-    def __init__(self, weapon, rate, name, chance, attack_rate, dmg, speed, scale, range):
-        self.weapon = weapon
+    hp: float
+    weapon_cls:    type
+    spawn_rate:    float
+    name:          str
+    chance:        float
+    attack_rate:   float
+    damage:        float
+    speed:         float
+    scale:         float
+    target_range:  float
+    progression_lvl: float = 0.0
+    reward: float = 30
 
-        self.spawn_timer = 0.0
-        self.spawn_rate  = rate
-        self.name = name
-        self.chance = chance
-        self.attack_rate = attack_rate
-        self.dmg = dmg
-        self.speed = speed
-        self.scale = scale
-        self.range = range
+    spawn_timer:   float = field(default=0.0, init=False)
 
-
-    def _random_spawn_pos(self, radius: float,
+    def _random_spawn_pos(self,
+                          radius: float,
                           center: pygame.Vector2) -> pygame.Vector2:
         angle = random.uniform(0, 2 * math.pi)
-        x     = center.x + radius * math.cos(angle)
-        y     = center.y + radius * math.sin(angle)
-        return pygame.Vector2(x, y)
+        return pygame.Vector2(
+            center.x + radius * math.cos(angle),
+            center.y + radius * math.sin(angle),
+        )
 
-    def spawn(self, dt, progression, field):
-        rate = self.spawn_rate - 0.8 * progression
+    def spawn(self,
+              dt: float,
+              progression: float,
+              field) -> None:
+        # if we haven't reached required progression — do nothing
+        if progression < self.progression_lvl:
+            return
+
+        # advance timer and check if it's time to spawn
         self.spawn_timer += dt
-        if self.spawn_timer >= rate:
-            self.spawn_timer -= rate
+        effective_rate = max(0.1, self.spawn_rate - 0.8 * progression)
+        if self.spawn_timer < effective_rate:
+            return
 
-            if random.random() > self.chance:
-                return
+        self.spawn_timer -= effective_rate
 
-            pos = self._random_spawn_pos(400, field.player.pos)
+        # chance check
+        if random.random() > self.chance:
+            return
 
-            weapon, etype, speed, scale = self.weapon(
-                    range=self.range, rate=self.attack_rate - 0.2 * progression, damage=self.dmg + 4 * progression), self.name, self.speed + 10 * progression, self.scale
+        # choose random point вокруг игрока
+        pos = self._random_spawn_pos(400, field.player.pos)
 
-            field.enemies.append(
-                Enemy(pos, weapon, etype, speed, scale)
-            )
-    
+        # создаём оружие с учётом прогрессии
+        weapon = self.weapon_cls(
+            range=self.target_range,
+            rate=max(0.1, self.attack_rate - 0.2 * progression),
+            damage=self.damage + 4 * progression
+        )
+
+        # скорость тоже растёт с прокруткой
+        speed = self.speed + 10 * progression
+        reward = self.reward + 5 * progression
+
+        # спавним врага
+        field.enemies.append(
+            Enemy(pos, self.hp, weapon, self.name, speed, self.scale, reward)
+        )

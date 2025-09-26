@@ -9,7 +9,7 @@ class AdrenalinSpeedEffect(Effect):
     effect is ready to trigger again on next damage.
     """
     def __init__(self,
-                 chance: float = 0.4,
+                 chance: float = 0.25,
                  amount: float = 32.0,
                  boost_duration: float = 7.0):
         super().__init__(None)

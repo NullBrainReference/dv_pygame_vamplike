@@ -132,9 +132,7 @@ class Halberd(Weapon):
     def on_attack(self, origin, targets, owner):
         if not self.can_attack():
             return
-        # self.reset_timer()
 
-        # 1) мгновенный урон всем в радиусе
         in_range = False
 
         close_targets = []
