@@ -43,7 +43,8 @@ class Enemy(Unit):
     def update(self, dt: float, player_pos: pygame.Vector2):
         self.update_effects(dt)
 
-        self.weapon.update(dt)
+        if self.weapon:
+            self.weapon.update(dt)
 
         direction = player_pos - self.pos
         

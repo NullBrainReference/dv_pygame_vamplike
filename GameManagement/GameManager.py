@@ -17,6 +17,7 @@ from Events.Events        import (
 from Unit.Enemy           import Enemy
 from Weapon.Weapon        import Sword
 from Weapon.Bow           import Bow
+from Weapon.Staff         import SummoningStaff 
 from GameManagement.GameField import GameField
 from .Camera              import Camera
 from Effects.BonusSelectorEffect  import BonusSelectorEffect
@@ -29,7 +30,8 @@ from Effects.MultiCastEffect      import MultiCastEffect
 from Effects.VampiricEffect       import VampiricEffect
 from Effects.LightningHitEffect   import LightningHitEffect
 
-from .SpawnController import SpawnController
+from .SpawnController         import SpawnController
+from .SummonerSpawnController import SummonerSpawnController
 
 
 MAX_PROJECTILE_DIST_SQ = 1000 ** 2
@@ -87,6 +89,21 @@ class GameManager:
                 progression_lvl  = 0.9,
                 reward           = 120
             ),
+            SummonerSpawnController(
+                hp               = 40,
+                weapon_cls       = SummoningStaff,
+                spawn_rate       = 2,
+                name             = "Staffdude",
+                chance           = 0.8,
+                attack_rate      = 1.4,
+                damage           = 26,
+                speed            = 48,
+                scale            = 2.0,
+                target_range     = 300,
+                progression_lvl  = 0.1,
+                reward           = 200
+            )
+
         ]
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))

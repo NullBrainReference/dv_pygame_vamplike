@@ -27,4 +27,19 @@ def setup_animations():
         frame_rate=4
     )
 
+    
+    ANIMATION_LIBRARY.load_unit_animations(
+        unit_name="Staffdude",
+        dir_path="Assets/Units/Staffdude",
+        frame_size=(16, 16),
+        frame_rate=4
+    )
+
+    ANIMATION_LIBRARY.load_unit_animations(
+        unit_name="Ghost",
+        dir_path="Assets/Units/Ghost",
+        frame_size=(16, 16),
+        frame_rate=1
+    )
+
 
