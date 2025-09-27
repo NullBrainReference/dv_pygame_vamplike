@@ -64,6 +64,19 @@ class GameManager:
             ),
             SpawnController(
                 hp               = 30,
+                weapon_cls       = Bow,
+                spawn_rate       = 2.0,
+                name             = "Spider",
+                chance           = 0.2,
+                attack_rate      = 1.2,
+                damage           = 6,
+                speed            = 28,
+                scale            = 1.6,
+                target_range     = 300,
+                progression_lvl  = 0.9,
+            ),
+            SpawnController(
+                hp               = 30,
                 weapon_cls       = Sword,
                 spawn_rate       = 1.6,
                 name             = "Zombie",
@@ -89,7 +102,7 @@ class GameManager:
                 progression_lvl  = 1,
             ),
             SpawnController(
-                hp               = 150,
+                hp               = 120,
                 weapon_cls       = Sword,
                 spawn_rate       = 12.5,
                 name             = "Zombie",
