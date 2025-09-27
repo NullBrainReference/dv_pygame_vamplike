@@ -27,8 +27,8 @@ class SummonerSpawnController(SpawnController):
 
         weapon = SummoningStaff(
             range             = self.target_range,
-            rate              = max(0.1, self.attack_rate - 0.2 * progression),
-            damage            = self.damage + 4 * progression,
+            rate              = max(1.0, self.attack_rate - 0.2 * progression),
+            damage            = self.damage,
             owner             = None,
             field             = field,
             progression_lvl   = self.progression_lvl
@@ -47,9 +47,6 @@ class SummonerSpawnController(SpawnController):
             reward     = reward
         )
 
-        # 3) Now that enemy exists, fix the SummoningStaff.owner
-        # weapon.owner = enemy
         weapon.set_owner(enemy)
 
-        # 4) Add to the game field
         field.enemies.append(enemy)

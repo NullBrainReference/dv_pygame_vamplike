@@ -76,31 +76,44 @@ class GameManager:
                 progression_lvl  = 0.0,
             ),
             SpawnController(
-                hp               = 70,
+                hp               = 30,
                 weapon_cls       = Sword,
-                spawn_rate       = 12,
+                spawn_rate       = 1.6,
                 name             = "Zombie",
-                chance           = 0.3,
+                chance           = 0.5,
                 attack_rate      = 1.4,
-                damage           = 26,
+                damage           = 14,
+                speed            = 52,
+                scale            = 2.0,
+                target_range     = 30,
+                progression_lvl  = 1,
+            ),
+            SpawnController(
+                hp               = 150,
+                weapon_cls       = Sword,
+                spawn_rate       = 12.5,
+                name             = "Zombie",
+                chance           = 0.7,
+                attack_rate      = 1.4,
+                damage           = 28,
                 speed            = 62,
                 scale            = 4.5,
-                target_range     = 48,
-                progression_lvl  = 0.9,
-                reward           = 120
+                target_range     = 50,
+                progression_lvl  = 0.8,
+                reward           = 200
             ),
             SummonerSpawnController(
                 hp               = 40,
                 weapon_cls       = SummoningStaff,
-                spawn_rate       = 2,
+                spawn_rate       = 12,
                 name             = "Staffdude",
-                chance           = 0.8,
-                attack_rate      = 1.4,
-                damage           = 26,
-                speed            = 48,
+                chance           = 0.7,
+                attack_rate      = 1.2,
+                damage           = 0,
+                speed            = 36,
                 scale            = 2.0,
-                target_range     = 300,
-                progression_lvl  = 0.1,
+                target_range     = 280,
+                progression_lvl  = 0.9,
                 reward           = 200
             )
 
@@ -141,7 +154,7 @@ class GameManager:
         options = [
             ("Vampiric + 3",  VampiricEffect(amount=3)),
             ("Regen +2",  RegenerationEffect(regen_rate=2)),
-            ("Damage +3", DamageBoostEffect(amount=3)),
+            ("Damage +4", DamageBoostEffect(amount=4)),
             ("Speed +8",  SpeedBoostEffect(amount=8)),
         ]
 

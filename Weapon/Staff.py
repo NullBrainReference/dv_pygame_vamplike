@@ -26,18 +26,18 @@ class SummoningStaff(Weapon):
         self.summoner = SummonController(
             owner            = owner,
             field            = self.field,
-            hp               = 30,
+            hp               = 20,
             weapon_cls       = Sword,
             spawn_rate       = 1.1,
             name             = "Ghost",
-            chance           = 1.0,
+            chance           = 0.8,
             attack_rate      = 1.2,
-            damage           = 5,
-            speed            = 80,
+            damage           = 16,
+            speed            = 90,
             scale            = 1.0,
-            target_range     = 30,
+            target_range     = 35,
             progression_lvl  = 0,
-            reward           = 0
+            reward           = 8
         )
     
 
@@ -50,6 +50,14 @@ class SummoningStaff(Weapon):
 
         if not self.can_attack():
             return
+        
+        in_range = [
+            t for t in targets
+            if (t.pos - origin).length_squared() <= self.range ** 2
+        ]
+        if not in_range:
+            return
+
         self.reset_timer()
 
         if owner:
