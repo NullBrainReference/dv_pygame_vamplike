@@ -28,8 +28,9 @@ class Enemy(Unit):
         self.scale = scale
 
         #Curr sprites are 16x16 at least 1px border is empty
-        #Sides are narrower so lets assume 12px. Replace with rect later
-        self._collider = Collider(parent=self, radius=12*scale)
+        #Sides are narrower so lets assume 8px. Replace with rect later
+        self._collider = Collider(parent=self, radius = 8 * scale)
+        self.mass = self.mass * self.scale
 
         self.animations = {
             state: ANIMATION_LIBRARY.get(f"{enemy_type}.{state}")
@@ -64,7 +65,8 @@ class Enemy(Unit):
 
         if direction.length_squared() >= 100:
             dir_norm = direction.normalize()
-            self._pos += dir_norm * self.speed * dt
+            self.desired_velocity = dir_norm * self.speed
+            # self._pos += dir_norm * self.speed * dt
 
             # Выбираем анимацию по направлению
             if abs(dir_norm.x) > abs(dir_norm.y):
@@ -80,6 +82,7 @@ class Enemy(Unit):
         else:
             self.current_anim = self.animations["idle"]
             self.flip_horiz = False
+            self.desired_velocity = pygame.Vector2(0, 0)
 
         # Animation frame update
         self.anim_timer += dt

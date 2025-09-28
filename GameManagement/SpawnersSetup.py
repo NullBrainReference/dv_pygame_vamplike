@@ -42,7 +42,7 @@ def get_spawners():
             damage           = 14,
             speed            = 48,
             scale            = 2.0,
-            target_range     = 30,
+            target_range     = 45,
             progression_lvl  = 0.0,
         ),
         SpawnController(
@@ -55,7 +55,7 @@ def get_spawners():
             damage           = 14,
             speed            = 52,
             scale            = 2.0,
-            target_range     = 30,
+            target_range     = 45,
             progression_lvl  = 1,
         ),
         SpawnController(
@@ -68,7 +68,7 @@ def get_spawners():
             damage           = 28,
             speed            = 62,
             scale            = 4.5,
-            target_range     = 50,
+            target_range     = 60,
             progression_lvl  = 0.8,
             reward           = 200
         ),

@@ -35,6 +35,8 @@ from .SummonerSpawnController import SummonerSpawnController
 from .SpawnersSetup import get_spawners
 from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 
+from Collision.Physics import physics_step 
+
 class GameManager:
     def __init__(self, screen):
         self.screen      = screen
@@ -157,7 +159,7 @@ class GameManager:
 
         # 5) Обновляем игрока и камеру
         self.field.player.update(dt)
-        self.camera.update(self.field.player.pos)
+        self.camera.update(self.field.player.pos, dt)
 
         # 6) Обновляем врагов и их атаки
         for en in self.field.enemies:
@@ -178,6 +180,8 @@ class GameManager:
 
         # 9) Collision & cleanup: iterate backwards
         units = [self.field.player] + self.field.enemies
+
+        physics_step(units, dt)
 
         for i in range(len(self.field.projectiles) - 1, -1, -1):
             proj = self.field.projectiles[i]

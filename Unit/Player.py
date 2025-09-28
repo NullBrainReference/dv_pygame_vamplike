@@ -25,8 +25,10 @@ class Player(Unit):
         self.scale = 2
 
         #Curr sprites are 16x16 at least 1px border is empty
-        #Sides are narrower so lets assume 12px. Replace with rect later
-        self._collider = Collider(parent=self, radius=12*self.scale)
+        #Sides are narrower so lets assume 10px. Replace with rect later
+        self._collider = Collider(parent=self, radius=8*self.scale)
+        self.mass = 1.8
+        self.mass = self.mass * self.scale
 
         # exp / level
         self.exp       = 0
@@ -95,7 +97,7 @@ class Player(Unit):
         if move.length_squared() > 0:
             # Movement
             dir_norm = move.normalize()
-            self._pos += dir_norm * self.speed * dt
+            self.desired_velocity = dir_norm * self.speed
 
             # anim selection
             if abs(dir_norm.x) > abs(dir_norm.y):
@@ -110,6 +112,7 @@ class Player(Unit):
         else:
             self.current_anim = self.animations["idle"]
             self.flip_horiz   = False
+            self.desired_velocity = pygame.Vector2(0, 0)
 
         if keys[pygame.K_1] and self.selected_weapon != "bow":
             self.switch_weapon("bow")

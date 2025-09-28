@@ -17,6 +17,10 @@ class Unit(ABC, IPosition):
         self.team    = None
         self.flash_tint = None
 
+        self.desired_velocity = pygame.Vector2(0,0)
+        self.impulse_velocity = pygame.Vector2(0,0)
+        self.mass       = 1.0
+
         self.add_effect(DamageFlashEffect(half_duration=0.15))
 
     @property
