@@ -32,10 +32,8 @@ from Effects.LightningHitEffect   import LightningHitEffect
 
 from .SpawnController         import SpawnController
 from .SummonerSpawnController import SummonerSpawnController
-
-
-MAX_PROJECTILE_DIST_SQ = 1000 ** 2
-HIT_RADIUS_SQ          = 20 ** 2
+from .SpawnersSetup import get_spawners
+from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 
 class GameManager:
     def __init__(self, screen):
@@ -48,89 +46,7 @@ class GameManager:
 
         self.camera = Camera(screen.get_size())
 
-        self.spawners = [
-            SpawnController(
-                hp               = 30,
-                weapon_cls       = Bow,
-                spawn_rate       = 2.0,
-                name             = "Spider",
-                chance           = 0.1,
-                attack_rate      = 1.2,
-                damage           = 6,
-                speed            = 28,
-                scale            = 1.6,
-                target_range     = 300,
-                progression_lvl  = 0.0,
-            ),
-            SpawnController(
-                hp               = 30,
-                weapon_cls       = Bow,
-                spawn_rate       = 2.0,
-                name             = "Spider",
-                chance           = 0.2,
-                attack_rate      = 1.2,
-                damage           = 6,
-                speed            = 28,
-                scale            = 1.6,
-                target_range     = 300,
-                progression_lvl  = 0.9,
-            ),
-            SpawnController(
-                hp               = 30,
-                weapon_cls       = Sword,
-                spawn_rate       = 1.6,
-                name             = "Zombie",
-                chance           = 0.8,
-                attack_rate      = 1.4,
-                damage           = 14,
-                speed            = 48,
-                scale            = 2.0,
-                target_range     = 30,
-                progression_lvl  = 0.0,
-            ),
-            SpawnController(
-                hp               = 30,
-                weapon_cls       = Sword,
-                spawn_rate       = 1.6,
-                name             = "Zombie",
-                chance           = 0.5,
-                attack_rate      = 1.4,
-                damage           = 14,
-                speed            = 52,
-                scale            = 2.0,
-                target_range     = 30,
-                progression_lvl  = 1,
-            ),
-            SpawnController(
-                hp               = 120,
-                weapon_cls       = Sword,
-                spawn_rate       = 12.5,
-                name             = "Zombie",
-                chance           = 0.7,
-                attack_rate      = 1.4,
-                damage           = 28,
-                speed            = 62,
-                scale            = 4.5,
-                target_range     = 50,
-                progression_lvl  = 0.8,
-                reward           = 200
-            ),
-            SummonerSpawnController(
-                hp               = 40,
-                weapon_cls       = SummoningStaff,
-                spawn_rate       = 12,
-                name             = "Staffdude",
-                chance           = 0.7,
-                attack_rate      = 1.2,
-                damage           = 0,
-                speed            = 36,
-                scale            = 2.0,
-                target_range     = 280,
-                progression_lvl  = 0.9,
-                reward           = 200
-            )
-
-        ]
+        self.spawners = get_spawners()
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
@@ -229,14 +145,12 @@ class GameManager:
                     if dx*dx + dy*dy > max_dist_sq:
                         del lst[i]
 
-        # 3) Если пауза — пропускаем всю остальную логику
         if self.paused:
             return
 
         # 4) Спавн врагов
         progression = min(self.field.player.level / 10, 1.0)
 
-        
         #new spawn
         for spawner in self.spawners:
             spawner.spawn(dt, progression, self.field)
@@ -262,29 +176,32 @@ class GameManager:
         for p in self.field.projectiles:
             p.update(dt)
 
-        # 9) Проверка попаданий
+        # 9) Collision & cleanup: iterate backwards
         units = [self.field.player] + self.field.enemies
 
-        # collision & cleanup: iterate backwards
         for i in range(len(self.field.projectiles) - 1, -1, -1):
             proj = self.field.projectiles[i]
+
             # out-of-range or dead
-            if not proj.alive or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ:
+            if (not proj.alive
+                or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ):
                 del self.field.projectiles[i]
                 continue
 
             if proj.target:
                 # directed projectile
-                if (proj.pos - proj.target.pos).length_squared() < HIT_RADIUS_SQ:
+                if proj.collider.intersects(proj.target.collider):
                     proj.target.take_damage(proj.damage)
                     proj.alive = False
             else:
-                # free projectile: hit any enemy of opposite team
+                # free projectile
                 for unit in units:
-                    if unit.team != proj.team and (proj.pos - unit.pos).length_squared() < HIT_RADIUS_SQ:
+                    if unit.team != proj.team \
+                    and proj.collider.intersects(unit.collider):
                         unit.take_damage(proj.damage)
                         proj.alive = False
                         break
+
 
     def draw(self):
         self.screen.fill((30, 30, 30))

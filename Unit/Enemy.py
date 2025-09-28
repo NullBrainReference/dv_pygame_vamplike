@@ -8,6 +8,7 @@ from GameManagement.Camera import Camera
 from Events.Events      import GainExp
 from Events.EventBus    import bus
 from Effects.Visual.DamageFlashEffect import DamageFlashEffect
+from Collision.Collider import Collider
 
 class Enemy(Unit):
     def __init__(self,
@@ -19,12 +20,16 @@ class Enemy(Unit):
                  scale: int = 1,
                  reward: int = 30):
         super().__init__(hp=hp, weapon=weapon)
-        self.pos = pos
+        self._pos = pos
         self.speed = speed
         self.enemy_type = enemy_type
         self.reward = reward
 
         self.scale = scale
+
+        #Curr sprites are 16x16 at least 1px border is empty
+        #Sides are narrower so lets assume 12px. Replace with rect later
+        self._collider = Collider(parent=self, radius=12*scale)
 
         self.animations = {
             state: ANIMATION_LIBRARY.get(f"{enemy_type}.{state}")
@@ -40,6 +45,14 @@ class Enemy(Unit):
 
         self.team = "enemy"
 
+    @property
+    def pos(self) -> pygame.Vector2:
+        return self._pos
+    
+    @property
+    def collider(self) -> Collider:
+        return self._collider
+
     def update(self, dt: float, player_pos: pygame.Vector2):
         self.update_effects(dt)
 
@@ -51,7 +64,7 @@ class Enemy(Unit):
 
         if direction.length_squared() >= 100:
             dir_norm = direction.normalize()
-            self.pos += dir_norm * self.speed * dt
+            self._pos += dir_norm * self.speed * dt
 
             # Выбираем анимацию по направлению
             if abs(dir_norm.x) > abs(dir_norm.y):

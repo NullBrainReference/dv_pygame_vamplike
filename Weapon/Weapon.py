@@ -3,7 +3,11 @@ import pygame
 from Events.Events import SpawnProjectile, SpawnEffect
 from Events.EventBus import bus
 from GameManagement.Camera import Camera
+from Collision.IPosition import IPosition
+from Collision.Collider import Collider
 import math
+
+MAX_PROJECTILE_DIST_SQ = 1000 ** 2
 
 class Weapon:
     def __init__(self, range: float, rate: float, damage: float):
@@ -29,7 +33,7 @@ class Weapon:
         return "Assets/Weapons/projectile.png"
 
 
-class Projectile:
+class Projectile(IPosition):
     def __init__(self,
                  pos: pygame.Vector2,
                  direction: pygame.Vector2,
@@ -37,7 +41,7 @@ class Projectile:
                  owner,
                  target=None):
         
-        self.pos       = pos.copy()
+        self._pos      = pos.copy()
         self.spawn_pos = pos.copy()
         self.direction = direction.normalize()
         self.speed     = 300
@@ -46,6 +50,8 @@ class Projectile:
         self.team      = getattr(owner, "team", None)
         self.target    = target
         self.alive     = True
+
+        self._collider = Collider(self, 8)
 
         self.original = pygame.image.load(
             "Assets/Weapons/projectile.png"
@@ -59,8 +65,16 @@ class Projectile:
         )
         self.rect = self.image.get_rect()
 
+    @property
+    def pos(self) -> pygame.Vector2:
+        return self._pos
+
+    @property
+    def collider(self) -> Collider:
+        return self._collider
+
     def update(self, dt: float):
-        self.pos += self.direction * self.speed * dt
+        self._pos += self.direction * self.speed * dt
 
     def draw(self, screen: pygame.Surface, camera: Camera):
         screen_pos       = camera.apply(self.pos)

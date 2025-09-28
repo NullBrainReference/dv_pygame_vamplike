@@ -1,10 +1,13 @@
 
 import pygame
 from abc import ABC, abstractmethod
+from Collision.IPosition import IPosition
+from Collision.Collider import Collider
+
 from Effects.Effect import Effect
 from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 
-class Unit(ABC):
+class Unit(ABC, IPosition):
     def __init__(self, hp: float, weapon):
         self.max_hp = hp
         self.hp     = hp
@@ -15,6 +18,16 @@ class Unit(ABC):
         self.flash_tint = None
 
         self.add_effect(DamageFlashEffect(half_duration=0.15))
+
+    @property
+    @abstractmethod
+    def pos(self) -> pygame.Vector2:
+        pass
+
+    @property
+    @abstractmethod
+    def collider(self) -> Collider:
+        pass
 
     def add_effect(self, effect: Effect):
         self.effects.append(effect)

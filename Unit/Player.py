@@ -15,13 +15,18 @@ from Events.Events import GainExp, LevelUp, BonusSelected
 from Events.EventBus import bus
 
 from Effects.LightningHitEffect import LightningHitEffect
+from Collision.Collider import Collider
 
 class Player(Unit):
     def __init__(self, weapon: Weapon):
         super().__init__(hp=100, weapon=weapon)
-        self.pos   = pygame.Vector2(400, 300)
+        self._pos   = pygame.Vector2(400, 300)
         self.speed = 42
         self.scale = 2
+
+        #Curr sprites are 16x16 at least 1px border is empty
+        #Sides are narrower so lets assume 12px. Replace with rect later
+        self._collider = Collider(parent=self, radius=12*self.scale)
 
         # exp / level
         self.exp       = 0
@@ -54,7 +59,7 @@ class Player(Unit):
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
         self.flip_horiz     = False
-        self.flash_tint  = None
+        self.flash_tint     = None
 
         self.is_dead = False
         self.team = "player"
@@ -64,6 +69,14 @@ class Player(Unit):
 
         self.add_effect(RegenerationEffect(regen_rate=3, duration=None))
         # self.add_effect(LightningHitEffect())
+
+    @property
+    def pos(self) -> pygame.Vector2:
+        return self._pos
+    
+    @property
+    def collider(self) -> Collider:
+        return self._collider
 
     def update(self, dt: float):
         if self.is_dead:
@@ -82,7 +95,7 @@ class Player(Unit):
         if move.length_squared() > 0:
             # Movement
             dir_norm = move.normalize()
-            self.pos += dir_norm * self.speed * dt
+            self._pos += dir_norm * self.speed * dt
 
             # anim selection
             if abs(dir_norm.x) > abs(dir_norm.y):
