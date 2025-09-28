@@ -35,7 +35,8 @@ from .SummonerSpawnController import SummonerSpawnController
 from .SpawnersSetup import get_spawners
 from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 
-from Collision.Physics import physics_step 
+from Collision.Physics import physics_step
+from UI.FPSCounter     import FPSCounter 
 
 class GameManager:
     def __init__(self, screen):
@@ -47,6 +48,9 @@ class GameManager:
         self.paused      = False
 
         self.camera = Camera(screen.get_size())
+
+        self.font = pygame.font.Font("Assets/Font/Caudex-Regular.ttf", 20)
+        self.fps_counter = FPSCounter(self.font)
 
         self.spawners = get_spawners()
 
@@ -217,6 +221,8 @@ class GameManager:
             p.draw(self.screen, self.camera)
         for e in self.field.effects:
             e.draw(self.screen, self.camera)
+        
+        self.fps_counter.draw(self.screen, self.clock)
 
         pygame.display.flip()
 
@@ -230,5 +236,6 @@ class GameManager:
 
             self.update(dt)
             self.draw()
+
 
         pygame.quit()
