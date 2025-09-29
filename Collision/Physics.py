@@ -41,8 +41,8 @@ def collide_via_grid(units: list[Unit]):
                     if not u.collider.intersects(v.collider):
                         continue
 
-                    # narrow-phase + разрешение
-                    separate_circles(u, v)
+                    separate_boxes(u, v)
+                    # separate_circles(u, v)
                     resolve_impulse(u, v)
 
 
@@ -59,25 +59,42 @@ def physics_step(units: list[Unit], dt: float):
     for u in units:
         u.impulse_velocity *= 0.9
 
+def separate_boxes(u1: Unit, u2: Unit):
+    b1 = u1.collider
+    b2 = u2.collider
+    r1 = b1.rect
+    r2 = b2.rect
 
+    c1 = pygame.Vector2(r1.centerx, r1.centery)
+    c2 = pygame.Vector2(r2.centerx, r2.centery)
+    delta = c2 - c1
 
-# def physics_step(units: list[Unit], dt: float):
-    
-#     for u in units:
-#         total_v = u.desired_velocity + u.impulse_velocity
-#         u._pos  += total_v * dt
+    half_w1 = r1.width  / 2
+    half_h1 = r1.height / 2
+    half_w2 = r2.width  / 2
+    half_h2 = r2.height / 2
 
-#     n = len(units)
-#     for i in range(n):
-#         for j in range(i+1, n):
-#             a, b = units[i], units[j]
-#             if not a.collider.intersects(b.collider):
-#                 continue
-#             separate_circles(a, b)
-#             resolve_impulse(a, b)
+    overlap_x = half_w1 + half_w2 - abs(delta.x)
+    overlap_y = half_h1 + half_h2 - abs(delta.y)
 
-#     for u in units:
-#         u.impulse_velocity *= 0.9
+    if overlap_x <= 0 or overlap_y <= 0:
+        return None
+
+    eps = 1e-3
+    total_mass = u1.mass + u2.mass
+    if total_mass == 0:
+        return None
+
+    if overlap_x < overlap_y:
+        n = pygame.Vector2(1 if delta.x > 0 else -1, 0)
+        push = n * (overlap_x + eps)
+    else:
+        n = pygame.Vector2(0, 1 if delta.y > 0 else -1)
+        push = n * (overlap_y + eps)
+
+    u1._pos -= push * (u2.mass / total_mass)
+    u2._pos += push * (u1.mass / total_mass)
+    return n
 
 
 def separate_circles(u1: Unit, u2: Unit):

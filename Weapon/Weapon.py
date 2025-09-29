@@ -4,7 +4,7 @@ from Events.Events import SpawnProjectile, SpawnEffect
 from Events.EventBus import bus
 from GameManagement.Camera import Camera
 from Collision.IPosition import IPosition
-from Collision.Collider import Collider
+from Collision.Collider import CircleCollider, Collider
 import math
 
 MAX_PROJECTILE_DIST_SQ = 1000 ** 2
@@ -51,7 +51,7 @@ class Projectile(IPosition):
         self.target    = target
         self.alive     = True
 
-        self._collider = Collider(self, 8)
+        self._collider = CircleCollider(self, 8)
 
         self.original = pygame.image.load(
             "Assets/Weapons/projectile.png"

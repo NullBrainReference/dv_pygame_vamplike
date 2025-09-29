@@ -15,7 +15,7 @@ from Events.Events import GainExp, LevelUp, BonusSelected
 from Events.EventBus import bus
 
 from Effects.LightningHitEffect import LightningHitEffect
-from Collision.Collider import Collider
+from Collision.Collider import BoxCollider, Collider
 
 class Player(Unit):
     def __init__(self, weapon: Weapon):
@@ -25,8 +25,8 @@ class Player(Unit):
         self.scale = 2
 
         #Curr sprites are 16x16 at least 1px border is empty
-        #Sides are narrower so lets assume 10px. Replace with rect later
-        self._collider = Collider(parent=self, radius=8*self.scale)
+        #Sides are narrower so lets assume 8px. Replace with rect later
+        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=8* min(2, self.scale))
         self.mass = 1.8
         self.mass = self.mass * self.scale
 
@@ -45,7 +45,7 @@ class Player(Unit):
         }
 
         self.weapons = {
-            "bow":   Bow(range=320, rate=1.5, damage=8),
+            "bow":   Bow(range=320, rate=1.2, damage=8),
             "halberd": Halberd(range=75,
                               rate=1.2,
                               damage=18,

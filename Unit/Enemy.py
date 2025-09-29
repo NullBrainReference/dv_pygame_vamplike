@@ -8,7 +8,7 @@ from GameManagement.Camera import Camera
 from Events.Events      import GainExp
 from Events.EventBus    import bus
 from Effects.Visual.DamageFlashEffect import DamageFlashEffect
-from Collision.Collider import Collider
+from Collision.Collider import BoxCollider, Collider
 
 class Enemy(Unit):
     def __init__(self,
@@ -29,7 +29,7 @@ class Enemy(Unit):
 
         #Curr sprites are 16x16 at least 1px border is empty
         #Sides are narrower so lets assume 8px. Replace with rect later
-        self._collider = Collider(parent=self, radius = 8 * scale)
+        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=8* min(2, self.scale))
         self.mass = self.mass * self.scale
 
         self.animations = {
