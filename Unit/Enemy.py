@@ -27,9 +27,8 @@ class Enemy(Unit):
 
         self.scale = scale
 
-        #Curr sprites are 16x16 at least 1px border is empty
-        #Sides are narrower so lets assume 8px. Replace with rect later
-        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=8* min(2, self.scale))
+
+        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=12* min(2, self.scale))
         self.mass = self.mass * self.scale
 
         self.animations = {

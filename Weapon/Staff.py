@@ -35,7 +35,7 @@ class SummoningStaff(Weapon):
             damage           = 16,
             speed            = 90,
             scale            = 1.0,
-            target_range     = 45,
+            target_range     = 35,
             progression_lvl  = 0,
             reward           = 8
         )

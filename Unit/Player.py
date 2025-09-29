@@ -24,9 +24,7 @@ class Player(Unit):
         self.speed = 42
         self.scale = 2
 
-        #Curr sprites are 16x16 at least 1px border is empty
-        #Sides are narrower so lets assume 8px. Replace with rect later
-        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=8* min(2, self.scale))
+        self._collider = BoxCollider(parent=self, width=5* min(2, self.scale), height=14* min(2, self.scale))
         self.mass = 1.8
         self.mass = self.mass * self.scale
 

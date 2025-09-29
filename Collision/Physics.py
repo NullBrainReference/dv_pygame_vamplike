@@ -4,11 +4,9 @@ import pygame
 from collections import defaultdict
 import math
 
-# Подберите под свой максимальный радиус
 MAX_RADIUS = 8*2
 CELL_SIZE  = MAX_RADIUS * 2  
 
-# Ячейки хранятся в словаре: (ix,iy) -> [Unit, …]
 grid: dict[tuple[int,int], list[Unit]] = defaultdict(list)
 
 def build_grid(units: list[Unit]) -> dict[tuple[int,int], list[Unit]]:
@@ -20,10 +18,9 @@ def build_grid(units: list[Unit]) -> dict[tuple[int,int], list[Unit]]:
     return grid
 
 def collide_via_grid(units: list[Unit]):
-    # 1) Строим grid
+
     build_grid(units)
 
-    # 2) Перебираем каждый юнит и соседние ячейки
     for u in units:
         ix = math.floor(u.pos.x / CELL_SIZE)
         iy = math.floor(u.pos.y / CELL_SIZE)
@@ -34,7 +31,7 @@ def collide_via_grid(units: list[Unit]):
                 if not cell:
                     continue
                 for v in cell:
-                    # пропускаем себя и уже обработанные пары
+                    # skip self and processed 
                     if v is u or id(v) <= id(u):
                         continue
 
@@ -47,15 +44,12 @@ def collide_via_grid(units: list[Unit]):
 
 
 def physics_step(units: list[Unit], dt: float):
-    # 1) Интеграция позиций
     for u in units:
         total_v = u.desired_velocity + u.impulse_velocity
         u._pos  += total_v * dt
 
-    # 2) Broad-phase: grid + локальные пары
     collide_via_grid(units)
 
-    # 3) Демпфинг импульсной составляющей
     for u in units:
         u.impulse_velocity *= 0.9
 
