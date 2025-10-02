@@ -35,3 +35,19 @@ class RequestTargets:
 class ProvideTargets:
     effect: object
     candidates: list
+    
+@dataclass
+class ShowEscMenu:
+    pass
+
+@dataclass
+class HideEscMenu:
+    pass
+
+@dataclass
+class QuitGame:
+    pass
+
+@dataclass
+class Continue:
+    pass

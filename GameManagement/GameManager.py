@@ -12,7 +12,11 @@ from Events.Events        import (
     ShowBonusSelector,
     BonusSelected,
     RequestTargets,
-    ProvideTargets
+    ProvideTargets,
+    HideEscMenu,
+    ShowEscMenu,
+    QuitGame,
+    Continue
 )
 from Unit.Enemy           import Enemy
 from Weapon.Weapon        import Sword
@@ -37,6 +41,7 @@ from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 
 from Collision.Physics import physics_step
 from UI.FPSCounter     import FPSCounter 
+from UI.EscMenu        import EscMenu
 
 class GameManager:
     def __init__(self, screen):
@@ -46,6 +51,9 @@ class GameManager:
         self.spawn_timer = 0.0
         self.spawn_rate  = 2.0   # seconds between spawns
         self.paused      = False
+        self.running     = True
+        self.menu_opened = False
+        self.selecting   = False
 
         self.camera = Camera(screen.get_size())
 
@@ -53,6 +61,10 @@ class GameManager:
         self.fps_counter = FPSCounter(self.font)
 
         self.spawners = get_spawners()
+
+        bus.subscribe(ShowEscMenu, lambda e: self._show_esc_menu())
+        bus.subscribe(HideEscMenu, lambda e: self._hide_esc_menu())
+        bus.subscribe(QuitGame,    lambda e: self._quit_game())
 
         bus.subscribe(SpawnProjectile,  lambda e: self.field.projectiles.append(e.projectile))
         bus.subscribe(SpawnEffect,      lambda e: self.field.effects.append(e.effect))
@@ -77,6 +89,7 @@ class GameManager:
     def _on_level_up(self, e: LevelUp):
         # Ставим игру на паузу и показываем селектор
         self.paused = True
+        self.selecting = True
         self.field.player.max_hp += 5
 
         bonus_options = [
@@ -99,7 +112,7 @@ class GameManager:
         bus.emit(ShowBonusSelector(options=options))
 
     def _on_bonus_selected(self, e: BonusSelected):
-
+        self.selecting = False
         self.paused = False
 
     def _random_spawn_pos(self, radius: float,
@@ -111,6 +124,7 @@ class GameManager:
 
     def _select_start_ability(self):
         self.paused = True
+        self.selecting = True
 
         options = [
             ("Spikes: Cast spikes on hit taken (25%)",  SpikesCastEffect()),
@@ -121,6 +135,18 @@ class GameManager:
 
         bus.emit(ShowBonusSelector(options=options))
 
+    def _show_esc_menu(self):
+        self.menu_opened = True
+        self.paused = True
+        self.field.effects.append(EscMenu(self.font))
+
+    def _hide_esc_menu(self):
+        self.menu_opened = False
+        if not self.selecting:
+            self.paused = False
+
+    def _quit_game(self):
+        self.running = False
 
     def update(self, dt: float):
         # 1) Всегда обновляем все эффекты (включая селектор)
@@ -227,12 +253,17 @@ class GameManager:
         pygame.display.flip()
 
     def run(self):
-        running = True
-        while running:
+        while self.running:
             dt = self.clock.tick(60) / 1000.0
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
-                    running = False
+                    self.running = False
+                if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+                    if self.menu_opened:
+                        bus.emit(HideEscMenu())
+                    else:
+                        bus.emit(ShowEscMenu())
+
 
             self.update(dt)
             self.draw()
