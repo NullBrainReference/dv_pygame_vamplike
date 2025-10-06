@@ -1,5 +1,6 @@
 
 import pygame
+import requests
 from Animation.AnimationLibrary import ANIMATION_LIBRARY
 from .Unit import Unit
 from Weapon.Weapon import Weapon
@@ -13,6 +14,7 @@ from Weapon.Bow import Bow
 from Weapon.Weapon import Halberd
 from Events.Events import GainExp, LevelUp, BonusSelected
 from Events.EventBus import bus
+
 
 from Effects.LightningHitEffect import LightningHitEffect
 from Collision.Collider import BoxCollider, Collider
@@ -153,6 +155,16 @@ class Player(Unit):
         self.current_anim   = self.animations["death"]
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
+
+        try:
+            payload = {"username": "test_name", "score": int(self.exp)}
+            response = requests.post("http://127.0.0.1:8000/submit", json=payload)
+            if response.status_code == 200:
+                print("Score submitted:", response.json())
+            else:
+                print("Error submitting score:", response.text)
+        except Exception as e:
+            print("Failed to connect to API:", e)
 
     def _advance_frame(self, dt: float):
 
