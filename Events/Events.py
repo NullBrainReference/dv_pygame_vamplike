@@ -51,3 +51,7 @@ class QuitGame:
 @dataclass
 class Continue:
     pass
+
+@dataclass
+class PlayerDied: 
+    pass

@@ -1,5 +1,5 @@
 
-import pygame
+import pygame, requests
 import random
 import math
 
@@ -16,7 +16,8 @@ from Events.Events        import (
     HideEscMenu,
     ShowEscMenu,
     QuitGame,
-    Continue
+    Continue,
+    PlayerDied
 )
 from Unit.Enemy           import Enemy
 from Weapon.Weapon        import Sword
@@ -42,6 +43,8 @@ from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 from Collision.Physics import physics_step
 from UI.FPSCounter     import FPSCounter 
 from UI.EscMenu        import EscMenu
+from UI.NameInput      import NameInput
+from UI.ScoreUI        import ScoreUI
 
 class GameManager:
     def __init__(self, screen):
@@ -72,7 +75,8 @@ class GameManager:
         bus.subscribe(ShowBonusSelector,
                       lambda e: self.field.effects.append(BonusSelectorEffect(e.options)))
         bus.subscribe(BonusSelected,    self._on_bonus_selected)
-        bus.subscribe(RequestTargets, self._on_request_targets)
+        bus.subscribe(RequestTargets,   self._on_request_targets)
+        bus.subscribe(PlayerDied,       self._on_player_died)
 
         self._select_start_ability()
 
@@ -87,7 +91,6 @@ class GameManager:
         bus.emit(ProvideTargets(effect=e.effect, candidates=candidates))
 
     def _on_level_up(self, e: LevelUp):
-        # Ставим игру на паузу и показываем селектор
         self.paused = True
         self.selecting = True
         self.field.player.max_hp += 5
@@ -144,6 +147,21 @@ class GameManager:
         self.menu_opened = False
         if not self.selecting:
             self.paused = False
+
+
+    def _on_player_died(self, event):
+        def submit_callback(username, score):
+            try:
+                payload = {"username": username, "score": int(score)}
+                requests.post("http://127.0.0.1:8000/submit", json=payload)
+            except Exception as e:
+                print("Error posting score:", e)
+            self.field.effects.append(ScoreUI(self.font))
+
+        self.paused = True
+        self.field.effects.append(NameInput(self.font, self.field.player.score, submit_callback))
+
+
 
     def _quit_game(self):
         self.running = False
@@ -252,21 +270,31 @@ class GameManager:
 
         pygame.display.flip()
 
+    def _handle_event(self, ev):
+        if ev.type == pygame.QUIT:
+            self.running = False
+            return
+
+        # forward to effects
+        for effect in self.field.effects:
+            if hasattr(effect, "handle_event"):
+                effect.handle_event(ev)
+
+        # global hotkeys
+        if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+            if self.menu_opened:
+                bus.emit(HideEscMenu())
+            else:
+                bus.emit(ShowEscMenu())
+
+
     def run(self):
         while self.running:
             dt = self.clock.tick(60) / 1000.0
             for ev in pygame.event.get():
-                if ev.type == pygame.QUIT:
-                    self.running = False
-                if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
-                    if self.menu_opened:
-                        bus.emit(HideEscMenu())
-                    else:
-                        bus.emit(ShowEscMenu())
-
+                self._handle_event(ev)
 
             self.update(dt)
             self.draw()
-
-
+            
         pygame.quit()

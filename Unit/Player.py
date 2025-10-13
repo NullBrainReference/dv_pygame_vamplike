@@ -12,7 +12,7 @@ from Effects.RegenerationEffect import RegenerationEffect
 from Effects.Visual.DamageFlashEffect import DamageFlashEffect
 from Weapon.Bow import Bow
 from Weapon.Weapon import Halberd
-from Events.Events import GainExp, LevelUp, BonusSelected
+from Events.Events import GainExp, LevelUp, BonusSelected, PlayerDied
 from Events.EventBus import bus
 
 
@@ -34,6 +34,7 @@ class Player(Unit):
         self.exp       = 0
         self.level     = 1
         self.max_exp   = 100
+        self.score     = 0
 
         # Словарь анимаций, включая death
         self.animations = {
@@ -156,15 +157,17 @@ class Player(Unit):
         self.anim_timer     = 0.0
         self.anim_frame_idx = 0
 
-        try:
-            payload = {"username": "test_name", "score": int(self.exp)}
-            response = requests.post("http://127.0.0.1:8000/submit", json=payload)
-            if response.status_code == 200:
-                print("Score submitted:", response.json())
-            else:
-                print("Error submitting score:", response.text)
-        except Exception as e:
-            print("Failed to connect to API:", e)
+        bus.emit(PlayerDied())
+
+        # try:
+        #     payload = {"username": "test_name", "score": int(self.exp)}
+        #     response = requests.post("http://127.0.0.1:8000/submit", json=payload)
+        #     if response.status_code == 200:
+        #         print("Score submitted:", response.json())
+        #     else:
+        #         print("Error submitting score:", response.text)
+        # except Exception as e:
+        #     print("Failed to connect to API:", e)
 
     def _advance_frame(self, dt: float):
 
@@ -197,6 +200,7 @@ class Player(Unit):
 
     def _on_gain_exp(self, e: GainExp):
         self.exp += e.amount
+        self.score += e.amount
         if self.exp >= self.max_exp:
             self.exp -= self.max_exp
             self.level += 1
