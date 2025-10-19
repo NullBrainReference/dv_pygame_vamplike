@@ -1,10 +1,12 @@
 # Weapon.py
 import pygame
-from Events.Events import SpawnProjectile, SpawnEffect
+from Events.Events import SpawnEffect
 from Events.EventBus import bus
 from GameManagement.Camera import Camera
-from Collision.IPosition import IPosition
-from Collision.Collider import CircleCollider, Collider
+# from Collision.IPosition import IPosition
+# from Collision.Collider import CircleCollider, Collider
+# from Pool.ObjectPool import IPoolable, projectile_pool
+# from Weapon.Projectile import Projectile
 import math
 
 MAX_PROJECTILE_DIST_SQ = 1000 ** 2
@@ -32,54 +34,63 @@ class Weapon:
     def icon_path(self) -> str:
         return "Assets/Weapons/projectile.png"
 
-
-class Projectile(IPosition):
-    def __init__(self,
-                 pos: pygame.Vector2,
-                 direction: pygame.Vector2,
-                 damage: float,
-                 owner,
-                 target=None):
+# class Projectile(IPosition, IPoolable):
+#     def __init__(self,
+#                  pos: pygame.Vector2,
+#                  direction: pygame.Vector2,
+#                  damage: float,
+#                  owner,
+#                  target=None):
         
-        self._pos      = pos.copy()
-        self.spawn_pos = pos.copy()
-        self.direction = direction.normalize()
-        self.speed     = 300
-        self.damage    = damage
-        self.owner     = owner
-        self.team      = getattr(owner, "team", None)
-        self.target    = target
-        self.alive     = True
+#         self._pos      = pos.copy()
+#         self.spawn_pos = pos.copy()
+#         self.direction = direction.normalize()
+#         self.speed     = 300
+#         self.damage    = damage
+#         self.owner     = owner
+#         self.team      = getattr(owner, "team", None)
+#         self.target    = target
+#         self.alive     = True
 
-        self._collider = CircleCollider(self, 8)
+#         self._collider = CircleCollider(self, 8)
 
-        self.original = pygame.image.load(
-            "Assets/Weapons/projectile.png"
-        ).convert_alpha()
-        base_angle = math.degrees(
-            math.atan2(-self.direction.y, self.direction.x)
-        )
-        self.image = pygame.transform.rotate(
-            self.original,
-            (base_angle + 180) % 360
-        )
-        self.rect = self.image.get_rect()
+#         self.original = pygame.image.load(
+#             "Assets/Weapons/projectile.png"
+#         ).convert_alpha()
+#         base_angle = math.degrees(
+#             math.atan2(-self.direction.y, self.direction.x)
+#         )
+#         self.image = pygame.transform.rotate(
+#             self.original,
+#             (base_angle + 180) % 360
+#         )
+#         self.rect = self.image.get_rect()
 
-    @property
-    def pos(self) -> pygame.Vector2:
-        return self._pos
+#     @property
+#     def pos(self) -> pygame.Vector2:
+#         return self._pos
+    
+#     @property
+#     def is_active(self) -> bool:
+#         return self.alive
 
-    @property
-    def collider(self) -> Collider:
-        return self._collider
+#     @property
+#     def collider(self) -> Collider:
+#         return self._collider
 
-    def update(self, dt: float):
-        self._pos += self.direction * self.speed * dt
+#     def occupy(self):
+#         self.alive = True
+    
+#     def release(self):
+#         self.alive = False
 
-    def draw(self, screen: pygame.Surface, camera: Camera):
-        screen_pos       = camera.apply(self.pos)
-        self.rect.center = screen_pos
-        screen.blit(self.image, self.rect)
+#     def update(self, dt: float):
+#         self._pos += self.direction * self.speed * dt
+
+#     def draw(self, screen: pygame.Surface, camera: Camera):
+#         screen_pos       = camera.apply(self.pos)
+#         self.rect.center = screen_pos
+#         screen.blit(self.image, self.rect)
 
 
 

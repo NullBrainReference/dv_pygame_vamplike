@@ -2,9 +2,10 @@
 
 import pygame
 from Weapon.Weapon import Weapon
-from Weapon.Weapon import Projectile
+from Weapon.Projectile import Projectile
 from Events.Events import SpawnProjectile
 from Events.EventBus import bus
+from Pool.pools import projectile_pool
 
 class Bow(Weapon):
     def __init__(self, range: float, rate: float, damage: float, sprite_path=None):
@@ -39,11 +40,29 @@ class Bow(Weapon):
             owner.on_attack([target])
 
         # spawn and emit projectile
-        proj = Projectile(
-            pos=origin.copy(),
-            direction=direction,
-            damage=self.damage,
-            owner=owner,
-            target=target
-        )
+        proj = projectile_pool.get_free()
+        if proj is None:
+            proj = Projectile(
+                pos         = origin.copy(),
+                direction   = direction,
+                damage      = self.damage,
+                owner       = owner,
+                target      = target
+            )
+            projectile_pool.add(proj)
+        else:
+            proj.reset(
+                pos         = origin,
+                direction   = direction,
+                damage      = self.damage,
+                owner       = owner,
+                target      = target)
+            proj.occupy()
+        # proj = Projectile(
+        #     pos=origin.copy(),
+        #     direction=direction,
+        #     damage=self.damage,
+        #     owner=owner,
+        #     target=target
+        # )
         bus.emit(SpawnProjectile(proj))

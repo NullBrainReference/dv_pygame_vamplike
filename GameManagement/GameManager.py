@@ -7,7 +7,7 @@ from Events.EventBus      import bus
 from Events.Events        import (
     SpawnProjectile,
     SpawnEffect,
-    GainExp,
+    # GainExp,
     LevelUp,
     ShowBonusSelector,
     BonusSelected,
@@ -16,7 +16,7 @@ from Events.Events        import (
     HideEscMenu,
     ShowEscMenu,
     QuitGame,
-    Continue,
+    # Continue,
     PlayerDied
 )
 from Unit.Enemy           import Enemy
@@ -35,8 +35,8 @@ from Effects.MultiCastEffect      import MultiCastEffect
 from Effects.VampiricEffect       import VampiricEffect
 from Effects.LightningHitEffect   import LightningHitEffect
 
-from .SpawnController         import SpawnController
-from .SummonerSpawnController import SummonerSpawnController
+# from .SpawnController         import SpawnController
+# from .SummonerSpawnController import SummonerSpawnController
 from .SpawnersSetup import get_spawners
 from Weapon.Weapon  import MAX_PROJECTILE_DIST_SQ
 
@@ -222,11 +222,10 @@ class GameManager:
             owner=self.field.player
         )
 
-        # 8) Обновляем снаряды
         for p in self.field.projectiles:
             p.update(dt)
 
-        # 9) Collision & cleanup: iterate backwards
+        # Collision & cleanup: iterate backwards
         units = [self.field.player] + self.field.enemies
 
         physics_step(units, dt)
@@ -237,6 +236,7 @@ class GameManager:
             # out-of-range or dead
             if (not proj.alive
                 or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ):
+                proj.release()
                 del self.field.projectiles[i]
                 continue
 
@@ -244,14 +244,17 @@ class GameManager:
                 # directed projectile
                 if proj.collider.intersects(proj.target.collider):
                     proj.target.take_damage(proj.damage)
-                    proj.alive = False
+                    proj.release()
+                    del self.field.projectiles[i]
+                    continue
             else:
                 # free projectile
                 for unit in units:
                     if unit.team != proj.team \
                     and proj.collider.intersects(unit.collider):
                         unit.take_damage(proj.damage)
-                        proj.alive = False
+                        proj.release()
+                        del self.field.projectiles[i]
                         break
 
 
