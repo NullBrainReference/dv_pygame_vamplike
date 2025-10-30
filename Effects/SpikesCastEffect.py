@@ -55,21 +55,22 @@ class SpikesCastEffect(Effect):
             proj = projectile_pool.get_free()
             if proj is None:
                 proj = Projectile(
-                    pos         = origin,
-                    direction   = direction,
-                    damage      = self.damage,
-                    owner       = unit,
-                    target      = None
+                    pos       = origin,
+                    direction = direction,
+                    damage    = self.damage,
+                    owner     = unit,
+                    target    = None
                 )
                 projectile_pool.add(proj)
+                proj.occupy()
             else:
                 proj.reset(
-                    pos         = origin,
-                    direction   = direction,
-                    damage      = self.damage,
-                    owner       = unit,
-                    target      = None)
-                proj.occupy()
+                    pos       = origin,
+                    direction = direction,
+                    damage    = self.damage,
+                    owner     = unit,
+                    target    = None
+                )
 
             # proj = Projectile(
             #     pos       = origin,

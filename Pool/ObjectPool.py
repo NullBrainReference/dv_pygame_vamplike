@@ -1,5 +1,6 @@
 from typing import Protocol
 from typing import TypeVar, Generic
+from collections import deque
 
     
 class IPoolable(Protocol):
@@ -18,12 +19,22 @@ T = TypeVar('T', bound=IPoolable)
 class ObjectPool(Generic[T]):
     def __init__(self):
         self.items: list[T] = []
+        self.free: deque[T] = deque()
 
     def add(self, item: T):
         self.items.append(item)
+        if not item.is_active:
+            self.free.append(item)
 
     def get_free(self) -> T | None:
-        for item in self.items:
-            if item.is_active == False:
-                return item
+        if self.free:
+            obj = self.free.popleft()
+            obj.occupy()
+            return obj
         return None
+
+    def release(self, item: T):
+        item.release()
+        self.free.append(item)
+
+

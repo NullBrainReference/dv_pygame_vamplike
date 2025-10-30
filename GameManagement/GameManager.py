@@ -46,6 +46,8 @@ from UI.EscMenu        import EscMenu
 from UI.NameInput      import NameInput
 from UI.ScoreUI        import ScoreUI
 
+from Pool.pools import projectile_pool
+
 class GameManager:
     def __init__(self, screen):
         self.screen      = screen
@@ -167,11 +169,9 @@ class GameManager:
         self.running = False
 
     def update(self, dt: float):
-        # 1) Всегда обновляем все эффекты (включая селектор)
         for effect in self.field.effects:
             effect.update(dt)
 
-        # 2) In-place очистка списков по «жизни» и дистанции
         px, py      = self.field.player.pos
         max_dist_sq = 800 * 800
 
@@ -183,12 +183,12 @@ class GameManager:
             for i in range(len(lst) - 1, -1, -1):
                 item = lst[i]
 
-                # удаляем по признаку «мертв»
+                # remove by attribute
                 if not getattr(item, attr, True):
                     del lst[i]
                     continue
 
-                # удаляем по дистанции, если есть .pos
+                # remove by distance
                 if hasattr(item, 'pos'):
                     dx = item.pos.x - px
                     dy = item.pos.y - py
@@ -198,24 +198,19 @@ class GameManager:
         if self.paused:
             return
 
-        # 4) Спавн врагов
         progression = min(self.field.player.level / 10, 1.0)
 
-        #new spawn
         for spawner in self.spawners:
             spawner.spawn(dt, progression, self.field)
 
-        # 5) Обновляем игрока и камеру
         self.field.player.update(dt)
         self.camera.update(self.field.player.pos, dt)
 
-        # 6) Обновляем врагов и их атаки
         for en in self.field.enemies:
             en.update(dt, self.field.player.pos)
             if en.weapon:
                 en.weapon.on_attack(en.pos, [self.field.player], owner=en)
 
-        # 7) Игрок атакует
         self.field.player.weapon.on_attack(
             self.field.player.pos,
             self.field.enemies,
@@ -236,7 +231,7 @@ class GameManager:
             # out-of-range or dead
             if (not proj.alive
                 or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ):
-                proj.release()
+                projectile_pool.release(proj)
                 del self.field.projectiles[i]
                 continue
 
@@ -244,7 +239,7 @@ class GameManager:
                 # directed projectile
                 if proj.collider.intersects(proj.target.collider):
                     proj.target.take_damage(proj.damage)
-                    proj.release()
+                    projectile_pool.release(proj)
                     del self.field.projectiles[i]
                     continue
             else:
@@ -253,7 +248,7 @@ class GameManager:
                     if unit.team != proj.team \
                     and proj.collider.intersects(unit.collider):
                         unit.take_damage(proj.damage)
-                        proj.release()
+                        projectile_pool.release(proj)
                         del self.field.projectiles[i]
                         break
 

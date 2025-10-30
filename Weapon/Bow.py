@@ -57,7 +57,7 @@ class Bow(Weapon):
                 damage      = self.damage,
                 owner       = owner,
                 target      = target)
-            proj.occupy()
+            
         # proj = Projectile(
         #     pos=origin.copy(),
         #     direction=direction,
