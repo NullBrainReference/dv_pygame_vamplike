@@ -278,7 +278,6 @@ class GameManager:
             if hasattr(effect, "handle_event"):
                 effect.handle_event(ev)
 
-        # global hotkeys
         if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             if self.menu_opened:
                 bus.emit(HideEscMenu())
