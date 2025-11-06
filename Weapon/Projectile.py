@@ -6,6 +6,8 @@ from Pool.ObjectPool import IPoolable
 import math
 
 class Projectile(IPosition, IPoolable):
+    _base_image = None
+
     def __init__(self,
                  pos: pygame.Vector2,
                  direction: pygame.Vector2,
@@ -25,16 +27,12 @@ class Projectile(IPosition, IPoolable):
 
         self._collider = CircleCollider(self, 8)
 
-        self.original = pygame.image.load(
-            "Assets/Weapons/projectile.png"
-        ).convert_alpha()
-        base_angle = math.degrees(
-            math.atan2(-self.direction.y, self.direction.x)
-        )
-        self.image = pygame.transform.rotate(
-            self.original,
-            (base_angle + 180) % 360
-        )
+        if self._base_image is None:
+            self._base_image = pygame.image.load("Assets/Weapons/projectile.png").convert_alpha()
+
+        base_angle = math.degrees(math.atan2(-self.direction.y, self.direction.x))
+        self.image = pygame.transform.rotate(self._base_image, (base_angle + 180) % 360)
+       
         self.rect = self.image.get_rect()
 
     def reset(self, pos, direction, damage, owner, target=None):
@@ -48,7 +46,7 @@ class Projectile(IPosition, IPoolable):
         self.alive     = True
 
         base_angle = math.degrees(math.atan2(-self.direction.y, self.direction.x))
-        self.image = pygame.transform.rotate(self.original, (base_angle + 180) % 360)
+        self.image = pygame.transform.rotate(self._base_image, (base_angle + 180) % 360)
         self.rect = self.image.get_rect()
 
 
