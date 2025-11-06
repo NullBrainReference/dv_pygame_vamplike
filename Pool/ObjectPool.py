@@ -27,6 +27,8 @@ class ObjectPool(Generic[T]):
             self.free.append(item)
 
     def get_free(self) -> T | None:
+        #Todo: remove log msg
+        print(f"pool of {T.__name__} has {len(self.items)} items. (remove this log!)")
         if self.free:
             obj = self.free.pop()
             obj.occupy()
