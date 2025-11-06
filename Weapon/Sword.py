@@ -24,9 +24,10 @@ class Sword(Weapon):
         
         e = pool.get_free()
         if e is None:
-            e = SwordSwingEffect(origin.copy(), 
-                                 self.range, 
-                                 on_expired=lambda: pool.release())
+            e = SwordSwingEffect(
+                origin.copy(), 
+                self.range, 
+                on_expired=lambda eff: pool.release(eff))
             pool.add(e);
         else:
             e.reset(origin.copy(), self.range)

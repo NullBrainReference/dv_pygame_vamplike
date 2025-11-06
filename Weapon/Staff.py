@@ -2,7 +2,7 @@
 
 import pygame
 from Weapon.Weapon         import Weapon
-from Weapon.Weapon         import Sword
+from Weapon.Sword        import Sword
 from GameManagement.SummonController import SummonController
 
 class SummoningStaff(Weapon):

@@ -21,7 +21,7 @@ class SwordSwingEffect(IPoolable):
         self.timer -= dt
         if self.timer <= 0:
             if self.is_active:
-                self.on_expired()
+                self.on_expired(self)
                 self.alive = False
             
 
