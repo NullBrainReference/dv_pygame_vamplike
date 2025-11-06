@@ -1,7 +1,7 @@
 from .SpawnController         import SpawnController
 from .SummonerSpawnController import SummonerSpawnController
 from Weapon.Bow import Bow
-from Weapon.Weapon import Sword
+from Weapon.Sword import Sword
 from Weapon.Staff import SummoningStaff
 
 def get_spawners():

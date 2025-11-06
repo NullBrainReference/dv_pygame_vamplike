@@ -34,106 +34,48 @@ class Weapon:
     def icon_path(self) -> str:
         return "Assets/Weapons/projectile.png"
 
-# class Projectile(IPosition, IPoolable):
-#     def __init__(self,
-#                  pos: pygame.Vector2,
-#                  direction: pygame.Vector2,
-#                  damage: float,
-#                  owner,
-#                  target=None):
+
+
+# class Sword(Weapon):
+#     def on_attack(self, origin, targets, owner=None):
+#         if not self.can_attack():
+#             return
+#         # self.reset_timer()
+
+#         in_range = False
+#         for target in targets:
+#             if (target.pos - origin).length() <= self.range:
+#                 target.take_damage(self.damage)
+#                 self.reset_timer()
+#                 in_range = True
+#         if not in_range:
+#             return
         
-#         self._pos      = pos.copy()
-#         self.spawn_pos = pos.copy()
-#         self.direction = direction.normalize()
-#         self.speed     = 300
-#         self.damage    = damage
-#         self.owner     = owner
-#         self.team      = getattr(owner, "team", None)
-#         self.target    = target
-#         self.alive     = True
+#         owner.on_attack(in_range)
+        
+#         e = SwordSwingEffect(origin.copy(), self.range)
+#         bus.emit(SpawnEffect(e))
 
-#         self._collider = CircleCollider(self, 8)
 
-#         self.original = pygame.image.load(
-#             "Assets/Weapons/projectile.png"
-#         ).convert_alpha()
-#         base_angle = math.degrees(
-#             math.atan2(-self.direction.y, self.direction.x)
-#         )
-#         self.image = pygame.transform.rotate(
-#             self.original,
-#             (base_angle + 180) % 360
-#         )
-#         self.rect = self.image.get_rect()
-
-#     @property
-#     def pos(self) -> pygame.Vector2:
-#         return self._pos
-    
-#     @property
-#     def is_active(self) -> bool:
-#         return self.alive
-
-#     @property
-#     def collider(self) -> Collider:
-#         return self._collider
-
-#     def occupy(self):
+# class SwordSwingEffect:
+#     def __init__(self, pos, radius):
+#         self.pos = pos
+#         self.radius = radius
+#         self.timer = 0.3
 #         self.alive = True
-    
-#     def release(self):
-#         self.alive = False
 
-#     def update(self, dt: float):
-#         self._pos += self.direction * self.speed * dt
+#     def update(self, dt):
+#         self.timer -= dt
+#         if self.timer <= 0:
+#             self.alive = False
 
 #     def draw(self, screen: pygame.Surface, camera: Camera):
-#         screen_pos       = camera.apply(self.pos)
-#         self.rect.center = screen_pos
-#         screen.blit(self.image, self.rect)
-
-
-
-class Sword(Weapon):
-    def on_attack(self, origin, targets, owner=None):
-        if not self.can_attack():
-            return
-        # self.reset_timer()
-
-        in_range = False
-        for target in targets:
-            if (target.pos - origin).length() <= self.range:
-                target.take_damage(self.damage)
-                self.reset_timer()
-                in_range = True
-        if not in_range:
-            return
-        
-        owner.on_attack(in_range)
-        
-        e = SwordSwingEffect(origin.copy(), self.range)
-        bus.emit(SpawnEffect(e))
-
-
-class SwordSwingEffect:
-    def __init__(self, pos, radius):
-        self.pos = pos
-        self.radius = radius
-        self.timer = 0.3
-        self.alive = True
-
-    def update(self, dt):
-        self.timer -= dt
-        if self.timer <= 0:
-            self.alive = False
-
-    def draw(self, screen: pygame.Surface, camera: Camera):
-        if not self.alive:
-            return
-        screen_pos = camera.apply(self.pos)
-        alpha = int(255 * (self.timer / 0.3))
-        color = (255, 255, 255, alpha)
-        pygame.draw.circle(screen, color, screen_pos, int(self.radius), 2)
+#         if not self.alive:
+#             return
+#         screen_pos = camera.apply(self.pos)
+#         alpha = int(255 * (self.timer / 0.3))
+#         color = (255, 255, 255, alpha)
+#         pygame.draw.circle(screen, color, screen_pos, int(self.radius), 2)
 
 class Halberd(Weapon):
     def __init__(self,

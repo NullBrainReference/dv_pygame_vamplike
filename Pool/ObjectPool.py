@@ -28,7 +28,7 @@ class ObjectPool(Generic[T]):
 
     def get_free(self) -> T | None:
         if self.free:
-            obj = self.free.popleft()
+            obj = self.free.pop()
             obj.occupy()
             return obj
         return None
