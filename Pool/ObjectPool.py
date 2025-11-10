@@ -38,5 +38,6 @@ class ObjectPool(Generic[T]):
     def release(self, item: T):
         item.release()
         self.free.append(item)
+        print("release append")
 
 

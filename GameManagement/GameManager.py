@@ -230,9 +230,10 @@ class GameManager:
 
             # out-of-range or dead
             if (not proj.alive
-                or (proj.pos - proj.spawn_pos).length_squared() > MAX_PROJECTILE_DIST_SQ):
+                or (proj.pos - self.field.player.pos).length_squared() > 600 * 600):
                 projectile_pool.release(proj)
                 del self.field.projectiles[i]
+                print("proj released")
                 continue
 
             if proj.target:

@@ -199,7 +199,7 @@ class Player(Unit):
             self.weapon = self.weapons[name]
 
     def _on_gain_exp(self, e: GainExp):
-        self.exp += e.amount
+        self.exp += e.amount * 3
         self.score += e.amount
         if self.exp >= self.max_exp:
             self.exp -= self.max_exp
